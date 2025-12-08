@@ -1,0 +1,114 @@
+/* NOTE: c++ code replaces $vars */
+
+$bg1 = #050504
+$bg2 = #141413
+$bg3 = #212121
+$bg4 = #282828
+$border1 = 4px
+$border2 = 8px
+$text1 = #ffffff
+
+$hl_fg = #344691
+$hl_bg = #16192b
+$hl_text = #536ced
+
+QWidget {
+    border-radius: $border2; 
+    color: $text1;
+    padding: 2px;
+
+    font-family: Arial;
+    font-size: 12pt;
+}
+
+QTUI, QTUI QSplitter {
+    background: $bg1;
+}
+
+BPanel { 
+    background: $bg2;
+    border-radius: $border2;
+    border: 2px solid $bg3;
+    margin:0;
+}
+
+QSplitter {
+    margin:0;
+}
+QSplitter::handle {
+    image: none;
+}
+
+QCheckBox:checked {
+    color: $hl_text;
+}
+
+QAbstractSpinBox {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 25px;
+    padding-left: 4px;
+    
+    background-color: $bg3;
+    border-radius: 3px;
+}
+
+QAbstractSpinBox:focus {
+    border: 2px solid $hl_fg;
+    background: $hl_bg;
+}
+
+QAbstractSpinBox::up-button {
+    border: 2px solid transparent;
+    padding: 4px;
+    right: 32px;
+    width: 16px;
+    height: 16px;
+    subcontrol-origin: border;
+    subcontrol-position: center right;
+    background: $bg4;
+    border-radius: $border1;
+}
+
+QAbstractSpinBox::down-button {;
+    border: 2px solid transparent;
+    
+    right: 4px;
+    padding: 4px;
+    width: 16px;
+    height: 16px;
+    subcontrol-origin: border;
+    subcontrol-position: center right;
+    background: $bg4;
+    border-radius: $border1;
+}
+
+QAbstractSpinBox::up-arrow {
+    image: url(resources/themes/images/spin-up.png);
+}
+
+QAbstractSpinBox::down-arrow {
+    image: url(resources/themes/images/spin-down.png);
+}
+
+QAbstractSpinBox::up-arrow:disabled,
+QAbstractSpinBox::up-arrow:off {
+    image: url(resources/themes/images/spin-up-disabled.png);
+}
+
+QAbstractSpinBox::down-arrow:disabled,
+QAbstractSpinBox::down-arrow:off {
+    image: url(resources/themes/images/spin-down-disabled.png);
+}
+
+
+QAbstractSpinBox::up-button:hover,
+QAbstractSpinBox::down-button:hover {
+    border: 2px solid $hl_fg;
+    background:  $hl_bg;
+}
+
+#StatusTitle {
+    /* font size set in code */
+    margin:12px;
+}
