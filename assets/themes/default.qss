@@ -1,0 +1,274 @@
+/* NOTE: c++ code replaces $vars */
+
+$bg1 = #050504
+$bg2 = #141413
+$bg3 = #232323
+$bg4 = #303030
+$border1 = 4px
+$border2 = 6px
+$text1 = #ffffff
+$text2 = #d2d2d2
+
+$hl_fg1 = #344691
+$hl_fg2 = #8f97ef
+$hl_bg = #16192b
+$hl_text = #7698ed
+
+$dis_text = #c0c0c0
+$dis_bg = #090909
+$dis_border = #232323
+
+QWidget {
+    border-radius: $border2; 
+    color: $text1;
+    padding: 2px;
+
+    font-family: Arial;
+    font-size: 11pt;
+}
+
+*:disabled {
+    color: $dis_text;
+}
+
+QTUI, QTUI QSplitter {
+    background: $bg1;
+}
+
+BPanel { 
+    background: $bg2;
+    border-radius: $border2;
+    border: 2px solid $bg3;
+    margin:0;
+}
+
+QSplitter {
+    margin:0;
+}
+QSplitter::handle {
+    image: none;
+}
+
+QLineEdit:disabled,
+QAbstractSpinBox:disabled
+{
+    background: $dis_bg;
+    border: 2px solid $dis_border;
+}
+
+QLineEdit {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 25px;
+    padding-left: 2px;
+    height:22px;
+    
+    background-color: $bg3;
+    border-radius: $border1;
+    border: 2px solid transparent;
+}
+
+
+
+QAbstractSpinBox:hover,
+QLineEdit:hover {
+    border: 2px solid $hl_fg1;
+}
+
+QAbstractSpinBox:focus,
+QLineEdit:focus {
+    border: 2px solid $hl_fg2;
+    background: $hl_bg;
+}
+
+QAbstractSpinBox
+{
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 25px;
+    padding-left: 4px;
+    
+    background-color: $bg3;
+    border-radius: $border1;
+
+    height: 12px;
+}
+
+QAbstractSpinBox::up-button {
+    border: 2px solid transparent;
+    padding: 4px;
+    right: 28px;
+    width: 12px;
+    height: 12px;
+    subcontrol-origin: border;
+    subcontrol-position: center right;
+    background: $bg4;
+    border-radius: $border1;
+}
+
+QAbstractSpinBox::down-button {;
+    border: 2px solid transparent;
+    
+    right: 2px;
+    padding: 4px;
+    width: 12px;
+    height: 12px;
+    subcontrol-origin: border;
+    subcontrol-position: center right;
+    background: $bg4;
+    border-radius: $border1;
+}
+
+QAbstractSpinBox::up-arrow {
+    image: url(:/assets/images/spin-up.png);
+}
+
+QAbstractSpinBox::down-arrow {
+    image: url(:/assets/images/spin-down.png);
+}
+
+QAbstractSpinBox::up-arrow:disabled,
+QAbstractSpinBox::up-arrow:off {
+    image: url(:/assets/images/spin-up-disabled.png);
+}
+
+QAbstractSpinBox::down-arrow:disabled,
+QAbstractSpinBox::down-arrow:off {
+    image: url(:/assets/images/spin-down-disabled.png);
+}
+
+
+QAbstractSpinBox::up-button:hover,
+QAbstractSpinBox::down-button:hover {
+    border: 2px solid $hl_fg1;
+    background:  $hl_bg;
+}
+
+
+QMenuBar {
+    font-size:10.5pt;
+    margin:0;
+}
+QMenuBar::item {
+    color: $text2;
+    padding: 4px 6px;
+    margin-right: 3px;
+
+    border-radius:2px;
+    background: transparent;
+}
+
+QMenuBar::item:selected {
+    color: $text1;
+    background: $bg4;
+}
+
+QMenuBar::item:pressed {
+    color: $text1;
+    background: $hl_fg1;
+}
+
+
+QMenu {
+    font-size:10.2pt;
+    background: $bg3;
+    border: 2px solid $bg4;
+    border-radius: $border1;
+    padding:0;
+}
+
+
+QMenu::item {
+    color: $text1;
+    padding: 5px 8px;
+}
+
+QMenu::item:selected {
+    background: $hl_fg1;
+}
+
+QMenu::icon{
+    padding-left:9px;
+}
+
+QMenu::separator {
+    height: 2px;
+    margin: 4px 0px 4px 0px;
+    background-color: $bg4;
+}
+
+
+QCheckBox::indicator {
+    width: 11px;
+    height: 11px;
+    padding: 2px;
+    margin-right:3px;
+    border-radius: $border1;
+    border: 2px solid $bg4;
+}
+QMenu::indicator {
+    width: 9px;
+    height: 9px;
+    padding: 2px;
+    margin-left: 6px;
+    border-radius: $border1;
+    border: 2px solid $bg4;
+}
+QCheckBox::indicator:unchecked:hover {
+    border-color: $hl_fg1;
+}
+QCheckBox::indicator:checked:hover {
+    border-color: $hl_fg2;
+}
+QCheckBox::indicator:unchecked,
+QMenu::indicator:unchecked { 
+    image: none; 
+}
+
+QCheckBox::indicator:checked,
+QMenu::indicator:checked { 
+    image: url(:/assets/images/check-on.png); 
+    background: $hl_bg;
+    border-color: $hl_fg1;
+}
+
+QCheckBox::indicator:disabled,
+QMenu::indicator:disabled {
+    border-color: none;
+} 
+QCheckBox::indicator:unchecked:disabled,
+QMenu::indicator:unchecked:disabled {
+    background: $dis_bg;
+}
+
+QPushButton {
+    padding-left:4px;
+    padding-right:4px;
+    background: $bg3;
+    border: 2px solid $bg4;
+}
+
+QPushButton:hover {
+    border-color: $hl_fg1;
+}
+
+QPushButton:pressed {
+    border-color: $hl_fg2;
+    background: $hl_fg1;
+}
+
+QPushButton:disabled {
+    border-color: transparent;
+    background: $dis_bg;
+}
+
+#AboutOkButton {
+    width: 60px;
+    right: 70px;
+}
+/* --------------------------------------------------- */
+
+#StatusTitle {
+    font-size:24pt;
+    margin:12px;
+}

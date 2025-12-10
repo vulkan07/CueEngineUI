@@ -19,18 +19,43 @@ public:
     explicit TestPanel(QWidget* parent);
 };
 
+
 class StatusPanel : public BPanel {
     Q_OBJECT
 private:
     QLCDNumber* mLCD;    
     QLabel* mTitleLabel;
-    QTimer* mClockTimer;
-    QTimer* mSyncTimer;
-    bool mSynced = false;
 public:
     explicit StatusPanel(QWidget* parent);
     void updateTime();
     void updateTitleSize();
     void resizeEvent(QResizeEvent* event) override;
-    void syncTimer();
+};
+
+
+class PlayingPanel : public BPanel {
+    Q_OBJECT
+public:
+    explicit PlayingPanel(QWidget* parent);
+};
+
+
+class CueListPanel : public BPanel {
+    Q_OBJECT
+public:
+    explicit CueListPanel(QWidget* parent);
+};
+
+
+class PropertiesPanel : public BPanel {
+    Q_OBJECT
+public:
+    explicit PropertiesPanel(QWidget* parent);
+};
+
+
+class MiscPanel : public BPanel {
+    Q_OBJECT
+public:
+    explicit MiscPanel(QWidget* parent);
 };

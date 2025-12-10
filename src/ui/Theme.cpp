@@ -3,11 +3,15 @@
 #include <QMap>
 #include <QRegularExpression>
 #include <iostream>
+#include <spdlog/spdlog.h>
+
 QString loadTheme(const QString& path) {
     QFile f(path);
     
-    if (!f.open(QFile::ReadOnly))
+    if (!f.open(QFile::ReadOnly)) {
+        spdlog::error(std::string("(ui/Theme::loadTheme) Cannot read file: ")+path.toStdString());
         return {};
+    }
     
     QTextStream in(&f);
     QStringList lines;

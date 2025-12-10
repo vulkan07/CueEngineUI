@@ -1,6 +1,5 @@
 #include "ui/QTUI.h"
 
-
 #include <QVBoxLayout>
 #include <QSplitter>
 #include <QFile>
@@ -14,59 +13,206 @@ QTUI::QTUI(QWidget* parent)
 }
 
 void QTUI::start() {
-    this->applyTheme("resources/themes/default.qss");
+    this->applyTheme(":/assets/themes/default.qss");
 
     auto* layout = new QVBoxLayout(this);
 
+    /*---------- Menubar ----------*/
+    mMenubar = new QMenuBar(this);
+    mMenubar->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+    mMenubar->setContextMenuPolicy(Qt::PreventContextMenu);
+
+    mFileMenu = mMenubar->addMenu("File");
+    mEditMenu = mMenubar->addMenu("Edit");
+    mLayoutMenu = mMenubar->addMenu("Layout");
+    mWindowMenu = mMenubar->addMenu("Window");
+    mAboutMenu = mMenubar->addMenu("About");
+
+    
+
+    mNewAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentNew), "New", this);
+    mOpenAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentOpen), "Open", this);
+    mSaveAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSave), "Save", this);
+    mSaveAsAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), "Save as", this);
+    mPreferencesAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentProperties), "Settings", this);
+    mExitAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::ApplicationExit), "Exit", this);
+    //
+    mUndoAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditUndo), "Undo", this);
+    mRedoAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditRedo), "Redo", this);
+    mCutAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditCut), "Cut", this);
+    mCopyAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditCopy), "Copy", this);
+    mPasteAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditPaste), "Paste", this);
+    mDuplicateAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditPaste), "Duplicate", this);
+    mSelectAllAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditSelectAll), "Select all", this);
+    mDeselectAllAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditSelectAll), "Deselect all", this);
+    //
+    mAutoAdvanceAction = new QAction("Auto select next cue", this);
+    mAutoAdvanceAction->setCheckable(true);
+    mAutoAdvanceAction->setChecked(true);
+    //
+    mSecondaryWindowAction = new QAction("Secondary window", this);
+    mSecondaryWindowAction->setCheckable(true);
+    //
+    mAboutCueEngineAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), "About Cue Engine", this);
+    mAboutQtAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), "About Qt", this);
+
+
+    mNewAction->setShortcuts(QKeySequence::New);
+    mOpenAction->setShortcuts(QKeySequence::Open);
+    mSaveAction->setShortcuts(QKeySequence::Save);
+    mSaveAsAction->setShortcuts(QKeySequence::SaveAs);
+    mPreferencesAction->setShortcuts(QKeySequence::Preferences);
+    mExitAction->setShortcuts(QKeySequence::Quit);
+    //
+    mUndoAction->setShortcuts(QKeySequence::Undo);
+    mRedoAction->setShortcuts(QKeySequence::Redo);
+    mCutAction->setShortcuts(QKeySequence::Cut);
+    mCopyAction->setShortcuts(QKeySequence::Copy);
+    mPasteAction->setShortcuts(QKeySequence::Paste);
+    // TODO ctrl+d mUndoAction->setShortcuts(QKeySequence::new);
+    mSelectAllAction->setShortcuts(QKeySequence::SelectAll);
+    // TODO mSelectAllAction->setShortcuts(QKeySequence::Deselect);
+
+    connect(mNewAction, &QAction::triggered, this, &QTUI::onNewAction);
+    connect(mOpenAction, &QAction::triggered, this, &QTUI::onOpenAction);
+    connect(mSaveAction, &QAction::triggered, this, &QTUI::onSaveAction);
+    connect(mSaveAsAction, &QAction::triggered, this, &QTUI::onSaveAsAction);
+    connect(mPreferencesAction, &QAction::triggered, this, &QTUI::onPreferencesAction);
+    connect(mExitAction, &QAction::triggered, this, &QTUI::onExitAction);
+    
+    connect(mUndoAction, &QAction::triggered, this, &QTUI::onUndoAction);
+    connect(mRedoAction, &QAction::triggered, this, &QTUI::onRedoAction);
+    connect(mCopyAction, &QAction::triggered, this, &QTUI::onCopyAction);
+    connect(mCutAction, &QAction::triggered, this, &QTUI::onCutAction);
+    connect(mPasteAction, &QAction::triggered, this, &QTUI::onPasteAction);
+    connect(mSelectAllAction, &QAction::triggered, this, &QTUI::onSelectAllAction);
+    connect(mDeselectAllAction, &QAction::triggered, this, &QTUI::onDeselectAllAction);
+
+    connect(mAutoAdvanceAction, &QAction::triggered, this, &QTUI::onAutoAdvanceFunction);
+
+    connect(mSecondaryWindowAction, &QAction::triggered, this, &QTUI::onSecondaryWindowAction);
+
+    connect(mAboutCueEngineAction, &QAction::triggered, this, &QTUI::onAboutCueEngineAction);
+    connect(mAboutQtAction, &QAction::triggered, this, &QTUI::onAboutQtAction);
+
+
+    mFileMenu->addAction(mNewAction);
+    mFileMenu->addAction(mOpenAction);
+    mFileMenu->addAction(mSaveAction);
+    mFileMenu->addAction(mSaveAsAction);
+    mFileMenu->addSeparator();
+    mFileMenu->addAction(mPreferencesAction);
+    mFileMenu->addAction(mExitAction);
+    //
+    mEditMenu->addAction(mUndoAction);
+    mEditMenu->addAction(mRedoAction);
+    mEditMenu->addSeparator();
+    mEditMenu->addAction(mCopyAction);
+    mEditMenu->addAction(mCutAction);
+    mEditMenu->addAction(mPasteAction);
+    mEditMenu->addAction(mDuplicateAction);
+    mEditMenu->addSeparator();
+    mEditMenu->addAction(mSelectAllAction);
+    mEditMenu->addAction(mDeselectAllAction);
+    //
+    mLayoutMenu->addAction(mAutoAdvanceAction);
+    //
+    mWindowMenu->addAction(mSecondaryWindowAction);
+    //
+    mAboutMenu->addAction(mAboutCueEngineAction);
+    mAboutMenu->addAction(mAboutQtAction);
+
+
+    layout->addWidget(mMenubar);
+
+
+    /*---------- Panels ----------*/
     QSplitter* splitter = new QSplitter(Qt::Horizontal, this);
     QSplitter* lSplitter = new QSplitter(Qt::Vertical, this);
     QSplitter* rSplitter = new QSplitter(Qt::Vertical, this);
 
-    BPanel* p1 = new BPanel(lSplitter);
-    BPanel* p2 = new BPanel(lSplitter);
-    BPanel* p3 = new StatusPanel(rSplitter);
-    BPanel* p4 = new TestPanel(rSplitter);
+    BPanel* playingPanel = new PlayingPanel(lSplitter);
+    BPanel* cueListPanel = new TestPanel(lSplitter);
+    BPanel* propertiesPanel = new PropertiesPanel(lSplitter);
+    BPanel* statusPanel = new StatusPanel(rSplitter);
+    BPanel* miscPanel = new MiscPanel(rSplitter);
     
-    
-    splitter->setHandleWidth(7);
-    lSplitter->setHandleWidth(7);
-    rSplitter->setHandleWidth(7);
+    splitter->setHandleWidth(6);
+    lSplitter->setHandleWidth(6);
+    rSplitter->setHandleWidth(6);
 
-    lSplitter->addWidget(p1);
-    lSplitter->addWidget(p2);
-    rSplitter->addWidget(p3);
-    rSplitter->addWidget(p4);
+    lSplitter->addWidget(playingPanel);
+    lSplitter->addWidget(cueListPanel);
+    lSplitter->addWidget(propertiesPanel);
+    rSplitter->addWidget(statusPanel);
+    rSplitter->addWidget(miscPanel);
 
     splitter->addWidget(lSplitter);
     splitter->addWidget(rSplitter);
 
-
     splitter->setContentsMargins(0,0,0,0);
     lSplitter->setContentsMargins(0,0,0,0);
     rSplitter->setContentsMargins(0,0,0,0);
-    
 
     layout->addWidget(splitter);    
-    this->setContentsMargins(3,4,3,4);
+    this->setContentsMargins(2,0,2,3); 
     layout->setContentsMargins(0,0,0,0);
+    layout->setSpacing(0);
 
-    this->setWindowTitle("CueEngine");
+    splitter->setSizes({1920,300});
+    lSplitter->setSizes({250,1080,400});
+
+    this->setWindowTitle("Cue Engine");
     this->setLayout(layout);
     this->show();
 }
 
 void QTUI::applyTheme(QString path) {
-    path.prepend("/").prepend(QDir::currentPath());
+    QIcon::setThemeName("breeze-dark"); // dark themed icons
     qApp->setStyleSheet(loadTheme(path));
 }
 
+
+void QTUI::onNewAction() {}
+void QTUI::onOpenAction() {}
+void QTUI::onSaveAction() {}
+void QTUI::onSaveAsAction() {}
+void QTUI::onPreferencesAction() {}
+void QTUI::onExitAction() {
+    qApp->exit(); 
+}
+
+void QTUI::onUndoAction() {}
+void QTUI::onRedoAction() {}
+void QTUI::onCopyAction() {}
+void QTUI::onCutAction() {}
+void QTUI::onPasteAction() {}
+void QTUI::onDuplicateAction() {}
+void QTUI::onSelectAllAction() {}
+void QTUI::onDeselectAllAction() {}
+
+void QTUI::onAutoAdvanceFunction() {}
+
+void QTUI::onSecondaryWindowAction() {}
+
+void QTUI::onAboutCueEngineAction() {
+    AboutCueEngineWidget* w = new AboutCueEngineWidget(this);
+    w->open();
+}
+void QTUI::onAboutQtAction() {
+    qApp->aboutQt();
+}
 
 
 /*================== Qt C++ Wisdom ==================
 
 (1) add "Q_OBJECT" macro to any qt inheriting class
+    + add the .h file to the CmakeLists qt_add_executable() as autoMOC doesn't work as of now  
 
 (2) Qt objects on the heap should have a parent set to be deleted properly 
 
+(3) Compile asset files in the CMakeLists to avoid file path issues 
+
+(4) Both the widget, and its layout have content margins set bruh
 
 ===================================================*/
