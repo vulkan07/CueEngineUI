@@ -29,11 +29,20 @@ qt_add_executable(CueEngine
     "include/ui/PanelWidgets.h"
     "src/ui/PanelWidgets.cpp"
 
+    "include/ui/PropertyTabWidgets.h"
+    "src/ui/PropertyTabWidgets.cpp"
+
     "include/ui/QTUI.h"
     "src/ui/QTUI.cpp"
 
     "include/ui/Theme.h"
     "src/ui/Theme.cpp"
+
+    "include/backend/Cue.h"
+    "src/backend/Cue.cpp"
+
+    "include/backend/Backend.h"
+    "src/backend/Backend.cpp"
 
 
     "src/main.cpp"

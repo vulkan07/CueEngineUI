@@ -28,7 +28,11 @@ void QTUI::start() {
     mWindowMenu = mMenubar->addMenu("Window");
     mAboutMenu = mMenubar->addMenu("About");
 
-    
+    mFileMenu->setToolTipsVisible(true);
+    mEditMenu->setToolTipsVisible(true);
+    mLayoutMenu->setToolTipsVisible(true);
+    mWindowMenu->setToolTipsVisible(true);
+    mAboutMenu->setToolTipsVisible(true);
 
     mNewAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentNew), "New", this);
     mOpenAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentOpen), "Open", this);
@@ -46,7 +50,8 @@ void QTUI::start() {
     mSelectAllAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditSelectAll), "Select all", this);
     mDeselectAllAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditSelectAll), "Deselect all", this);
     //
-    mAutoAdvanceAction = new QAction("Auto select next cue", this);
+    mAutoAdvanceAction = new QAction("Auto advance", this);
+    mAutoAdvanceAction->setToolTip("Automatically select the next cue after starting one");
     mAutoAdvanceAction->setCheckable(true);
     mAutoAdvanceAction->setChecked(true);
     //
@@ -122,6 +127,10 @@ void QTUI::start() {
     mAboutMenu->addAction(mAboutCueEngineAction);
     mAboutMenu->addAction(mAboutQtAction);
 
+    ShortcutManager::registerAction("Toggle secondary window", mSecondaryWindowAction);
+    ShortcutManager::registerAction("Open settings", mPreferencesAction);
+    ShortcutManager::registerAction("Duplicate cues", mDuplicateAction);
+    ShortcutManager::registerAction("Exit application", mExitAction);
 
     layout->addWidget(mMenubar);
 
@@ -132,7 +141,7 @@ void QTUI::start() {
     QSplitter* rSplitter = new QSplitter(Qt::Vertical, this);
 
     BPanel* playingPanel = new PlayingPanel(lSplitter);
-    BPanel* cueListPanel = new TestPanel(lSplitter);
+    BPanel* cueListPanel = new CueListPanel(lSplitter);
     BPanel* propertiesPanel = new PropertiesPanel(lSplitter);
     BPanel* statusPanel = new StatusPanel(rSplitter);
     BPanel* miscPanel = new MiscPanel(rSplitter);
@@ -165,6 +174,9 @@ void QTUI::start() {
     this->setWindowTitle("Cue Engine");
     this->setLayout(layout);
     this->show();
+
+    mSecondaryWindow = new SecondaryWindow(); // starts hidden
+    connect(mSecondaryWindow, &SecondaryWindow::closed, this, [&]{mSecondaryWindowAction->setChecked(false);});
 }
 
 void QTUI::applyTheme(QString path) {
@@ -173,11 +185,19 @@ void QTUI::applyTheme(QString path) {
 }
 
 
+void QTUI::closeEvent(QCloseEvent* event) {
+    this->onExitAction();
+    QFrame::closeEvent(event);
+}
+
 void QTUI::onNewAction() {}
 void QTUI::onOpenAction() {}
 void QTUI::onSaveAction() {}
 void QTUI::onSaveAsAction() {}
-void QTUI::onPreferencesAction() {}
+void QTUI::onPreferencesAction() {
+    SettingsWidget w = SettingsWidget(this);
+    w.exec();
+}
 void QTUI::onExitAction() {
     qApp->exit(); 
 }
@@ -193,7 +213,9 @@ void QTUI::onDeselectAllAction() {}
 
 void QTUI::onAutoAdvanceFunction() {}
 
-void QTUI::onSecondaryWindowAction() {}
+void QTUI::onSecondaryWindowAction() {
+    mSecondaryWindow->setVisible(mSecondaryWindowAction->isChecked());
+}
 
 void QTUI::onAboutCueEngineAction() {
     AboutCueEngineWidget* w = new AboutCueEngineWidget(this);
@@ -202,6 +224,30 @@ void QTUI::onAboutCueEngineAction() {
 void QTUI::onAboutQtAction() {
     qApp->aboutQt();
 }
+
+
+
+SecondaryWindow::SecondaryWindow() : QFrame() {
+    this->setLayout(new QVBoxLayout(this));
+    this->setObjectName("SecondaryWindow");
+    this->layout()->addWidget(new QLabel("balls+",this));
+}
+void SecondaryWindow::closeEvent(QCloseEvent* event) {
+    emit closed();
+} 
+
+
+
+QMap<QString, QAction*> ShortcutManager::actions = QMap<QString, QAction*>();
+
+void ShortcutManager::registerAction(const QString& id, QAction* action) {
+    ShortcutManager::actions[id] = action;
+}
+
+const QMap<QString, QAction*>& ShortcutManager::getActions() {
+    return ShortcutManager::actions;
+}
+
 
 
 /*================== Qt C++ Wisdom ==================

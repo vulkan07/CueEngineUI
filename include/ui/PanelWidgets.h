@@ -1,10 +1,14 @@
 #pragma once
 
+
 #include <QLabel>
 #include <QFrame>
 #include <QWidget>
 #include <QLCDNumber>
 #include <QTimer>
+#include <QTabWidget>
+
+#include "ui/PropertyTabWidgets.h"
 
 class BPanel : public QFrame {
     Q_OBJECT
@@ -49,8 +53,12 @@ public:
 
 class PropertiesPanel : public BPanel {
     Q_OBJECT
+private:
+    std::vector<PropertyPage*> mPages;
+    QTabWidget* mTabWidget;
 public:
     explicit PropertiesPanel(QWidget* parent);
+    void addPage(PropertyPage* page);
 };
 
 

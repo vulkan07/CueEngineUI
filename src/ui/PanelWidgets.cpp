@@ -7,6 +7,7 @@
 #include <QTime>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QTextEdit>
 
 #include <iostream>
 #include <chrono>
@@ -43,6 +44,7 @@ TestPanel::TestPanel(QWidget* parent) : BPanel(parent) {
     auto* lcd = new QLCDNumber(8,this);
     auto* line = new QLineEdit("nigger",this);
     auto* line2 = new QLineEdit("disabled nig",this);
+    auto* te = new QTextEdit(this);
 
     line2->setDisabled(true);
     c->setChecked(true);
@@ -64,6 +66,7 @@ TestPanel::TestPanel(QWidget* parent) : BPanel(parent) {
     this->layout()->addWidget(c);
     this->layout()->addWidget(c2);
     this->layout()->addWidget(c4);
+    this->layout()->addWidget(te);
     this->layout()->addWidget(c3);
     this->layout()->addWidget(s);
     this->layout()->addWidget(line);
@@ -142,5 +145,25 @@ void StatusPanel::resizeEvent(QResizeEvent* event) {
 
 MiscPanel::MiscPanel(QWidget* parent) : BPanel(parent) {}
 PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {}
-CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {}
-PropertiesPanel::PropertiesPanel(QWidget* parent) : BPanel(parent) {}
+
+CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
+    this->layout()->setContentsMargins(0,0,0,0);
+}
+
+PropertiesPanel::PropertiesPanel(QWidget* parent) : BPanel(parent) {
+    this->layout()->setContentsMargins(0,2,0,0);
+
+    mTabWidget = new QTabWidget(this);
+    
+    this->layout()->addWidget(mTabWidget);
+
+    this->addPage(new CueGeneralPage(mTabWidget));
+    this->addPage(new TextCuePage(mTabWidget));
+    this->addPage(new IdkRandomPage(mTabWidget));
+
+}
+
+void PropertiesPanel::addPage(PropertyPage* page) {
+    mPages.push_back(page);
+    mTabWidget->addTab(page, page->getPageName());
+}

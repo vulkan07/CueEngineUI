@@ -3,7 +3,6 @@
 #include "ui/Theme.h"
 
 #include <QLabel>
-
 #include <QFrame>
 #include <QWidget>
 #include <QVBoxLayout>
@@ -11,10 +10,25 @@
 #include <QString>
 #include <QMenuBar>
 #include <QMenu>
+#include <QMap>
+
+
+class SecondaryWindow : public QFrame {
+    Q_OBJECT
+public:
+    explicit SecondaryWindow();
+    void closeEvent(QCloseEvent* event) override;
+signals:
+    void closed();
+};
+
 
 class QTUI : public QFrame {
     Q_OBJECT
 private:
+
+    SecondaryWindow* mSecondaryWindow;
+
     QMenuBar* mMenubar;
     QMenu* mFileMenu;
     QMenu* mEditMenu;
@@ -54,6 +68,8 @@ public:
     void start();
     void applyTheme(QString path);
 
+    void closeEvent(QCloseEvent* event) override;
+
     void onNewAction();
     void onOpenAction();
     void onSaveAction();
@@ -76,4 +92,19 @@ public:
 
     void onAboutCueEngineAction();
     void onAboutQtAction();
+};
+
+
+// Register QActions here that should appear in the settings' shortcuts page
+
+// TODO probably a list/vector should be used as the order of shortcuts is arbitrary from QMap
+class ShortcutManager : public QObject {
+    Q_OBJECT
+private:
+    static QMap<QString, QAction*> actions;
+public:
+    static void registerAction(const QString& id, QAction* action);
+    
+    // also return an iterator maybe rather than the list itself?
+    static const QMap<QString, QAction*>& getActions();
 };

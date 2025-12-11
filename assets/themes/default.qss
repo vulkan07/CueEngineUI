@@ -1,10 +1,11 @@
 /* NOTE: c++ code replaces $vars */
 
 $bg1 = #050504
-$bg2 = #141413
+$bg2 = #141414
+$bg_darker2 = #10100f
 $bg3 = #232323
 $bg4 = #303030
-$border1 = 4px
+$border1 = 3px
 $border2 = 6px
 $text1 = #ffffff
 $text2 = #d2d2d2
@@ -17,6 +18,8 @@ $hl_text = #7698ed
 $dis_text = #c0c0c0
 $dis_bg = #090909
 $dis_border = #232323
+
+$border_w = 1px
 
 QWidget {
     border-radius: $border2; 
@@ -31,15 +34,16 @@ QWidget {
     color: $dis_text;
 }
 
-QTUI, QTUI QSplitter {
+QTUI, QTUI QSplitter, #SecondaryWindow {
     background: $bg1;
 }
 
 BPanel { 
     background: $bg2;
     border-radius: $border2;
-    border: 2px solid $bg3;
+    border: $border_w solid $bg3;
     margin:0;
+    padding:0;
 }
 
 QSplitter {
@@ -50,34 +54,38 @@ QSplitter::handle {
 }
 
 QLineEdit:disabled,
+QTextEdit:disabled,
 QAbstractSpinBox:disabled
 {
     background: $dis_bg;
-    border: 2px solid $dis_border;
+    border: $border_w solid $dis_border;
 }
 
-QLineEdit {
+QLineEdit, QTextEdit {
     padding-top: 2px;
     padding-bottom: 2px;
     padding-right: 25px;
     padding-left: 2px;
-    height:22px;
-    
+
     background-color: $bg3;
     border-radius: $border1;
-    border: 2px solid transparent;
+    border: $border_w solid transparent;
 }
 
-
+QLineEdit {
+    height:22px;
+}
 
 QAbstractSpinBox:hover,
-QLineEdit:hover {
-    border: 2px solid $hl_fg1;
+QLineEdit:hover,
+QTextEdit:hover {
+    border: $border_w solid $hl_fg1;
 }
 
 QAbstractSpinBox:focus,
-QLineEdit:focus {
-    border: 2px solid $hl_fg2;
+QLineEdit:focus,
+QTextEdit:focus {
+    border: $border_w solid $hl_fg2;
     background: $hl_bg;
 }
 
@@ -95,7 +103,7 @@ QAbstractSpinBox
 }
 
 QAbstractSpinBox::up-button {
-    border: 2px solid transparent;
+    border: $border_w solid transparent;
     padding: 4px;
     right: 28px;
     width: 12px;
@@ -107,7 +115,7 @@ QAbstractSpinBox::up-button {
 }
 
 QAbstractSpinBox::down-button {;
-    border: 2px solid transparent;
+    border: $border_w solid transparent;
     
     right: 2px;
     padding: 4px;
@@ -140,7 +148,7 @@ QAbstractSpinBox::down-arrow:off {
 
 QAbstractSpinBox::up-button:hover,
 QAbstractSpinBox::down-button:hover {
-    border: 2px solid $hl_fg1;
+    border: $border_w solid $hl_fg1;
     background:  $hl_bg;
 }
 
@@ -172,7 +180,7 @@ QMenuBar::item:pressed {
 QMenu {
     font-size:10.2pt;
     background: $bg3;
-    border: 2px solid $bg4;
+    border: $border_w solid $bg4;
     border-radius: $border1;
     padding:0;
 }
@@ -204,7 +212,7 @@ QCheckBox::indicator {
     padding: 2px;
     margin-right:3px;
     border-radius: $border1;
-    border: 2px solid $bg4;
+    border: $border_w solid $bg4;
 }
 QMenu::indicator {
     width: 9px;
@@ -212,7 +220,7 @@ QMenu::indicator {
     padding: 2px;
     margin-left: 6px;
     border-radius: $border1;
-    border: 2px solid $bg4;
+    border: $border_w solid $bg4;
 }
 QCheckBox::indicator:unchecked:hover {
     border-color: $hl_fg1;
@@ -242,14 +250,14 @@ QMenu::indicator:unchecked:disabled {
 }
 
 QPushButton {
-    padding-left:4px;
-    padding-right:4px;
+    padding: 2px 4px;
     background: $bg3;
-    border: 2px solid $bg4;
+    border: $border_w solid $bg4;
 }
 
 QPushButton:hover {
     border-color: $hl_fg1;
+    background: $hl_bg;
 }
 
 QPushButton:pressed {
@@ -262,10 +270,67 @@ QPushButton:disabled {
     background: $dis_bg;
 }
 
-#AboutOkButton {
-    width: 60px;
-    right: 70px;
+PropertiesPanel {
+    background: $bg_darker2;
 }
+
+QTabWidget::tab-bar {
+    left: 5px;
+}
+
+QTabWidget::pane {
+    margin:0;
+    border-top: $border_w solid $bg3;
+    background: $bg2;
+}
+
+QTabBar::tab {
+    padding: 4px 5px;
+    border: $border_w solid $bg3;
+    border-bottom: none;
+    border-top-left-radius: 4;
+    border-top-right-radius: 4;
+    background: $bg2;
+    margin-top: 3px;
+    color: $text2;
+
+    margin-right: 0px;
+}
+
+QTabBar::tab:selected {
+    color: $text1;
+    margin-top:1;
+    padding-top:6px;
+    border-color: $bg4;
+    background: $bg3;
+}
+
+QTabBar::tab:hover {
+    border-color: $hl_fg2;
+    color: $text1;
+}
+
+QTabBar:focus {
+    outline: 0; /* remove text underline */
+}
+
+QDialogButtonBox QPushButton {
+    margin: 8px 0px;
+    padding: 3px 5px;
+}
+
+SettingsWidget {
+    background: $bg2;
+}
+
+QToolTip {
+    border-color: $bg4;
+    background: $bg3;
+    color: $text1;
+    padding:2px;
+    font-size:10pt;
+}
+
 /* --------------------------------------------------- */
 
 #StatusTitle {
