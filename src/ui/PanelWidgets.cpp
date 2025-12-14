@@ -18,12 +18,6 @@ BPanel::BPanel(QWidget* parent) : QFrame(parent) {
     this->setLayout(layout);
     this->setMinimumWidth(240);
     this->setMinimumHeight(200);
-/*
-    auto* l = new QLabel("asd",this);
-    l->setMaximumWidth(200);
-    l->setMaximumHeight(100);
-    layout->addWidget(l);
-*/
 }
 
 TestPanel::TestPanel(QWidget* parent) : BPanel(parent) {
@@ -58,6 +52,8 @@ TestPanel::TestPanel(QWidget* parent) : BPanel(parent) {
 
     s->setSuffix("s");
 
+    this->setMaximumWidth(500);
+
     this->layout()->addWidget(btn1);
     this->layout()->addWidget(btn2);
     this->layout()->addWidget(btn3);
@@ -72,6 +68,7 @@ TestPanel::TestPanel(QWidget* parent) : BPanel(parent) {
     this->layout()->addWidget(line);
     this->layout()->addWidget(line2);
     this->layout()->addWidget(lcd);
+
 }
 
 StatusPanel::StatusPanel(QWidget* parent) : 
@@ -82,11 +79,9 @@ StatusPanel::StatusPanel(QWidget* parent) :
     
     this->setFixedHeight(215);
 
-    QBoxLayout* layout = qobject_cast<QBoxLayout*>(this->layout());
-    layout->addWidget(mTitleLabel);
-    layout->addWidget(mLCD);
-    //layout->addStretch();
-
+    layout()->addWidget(mTitleLabel);
+    layout()->addWidget(mLCD);
+    
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 
     this->mLCD->setDigitCount(8);
@@ -100,6 +95,7 @@ StatusPanel::StatusPanel(QWidget* parent) :
     mTitleLabel->setText("Goon Engine");
 
     this->updateTime();
+
 }
 
 // calls itself with a singleshot timer
@@ -145,9 +141,29 @@ void StatusPanel::resizeEvent(QResizeEvent* event) {
 
 MiscPanel::MiscPanel(QWidget* parent) : BPanel(parent) {}
 PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {}
-
+#include <QTableView>
+#include <QHeaderView>
+#include <ui/CueListModel.h>
 CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
+
+    for (int i = 0; i < 40; i++) {
+        backend.addCue(std::make_unique<Cue>("I'm a cue!", "faszom nagyon hosszue leiras blah blhah leiras"));
+    }
     this->layout()->setContentsMargins(0,0,0,0);
+    auto* view = new QTableView(this);
+    auto* model = new CueListModel(this);
+    view->setModel(model);
+
+    view->setSelectionBehavior(QAbstractItemView::SelectRows);
+    view->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    view->horizontalHeader()->setStretchLastSection(true);
+    view->verticalHeader()->setVisible(false);
+
+    view->setAlternatingRowColors(false);
+    view->setSortingEnabled(false);
+
+    layout()->addWidget(view);
 }
 
 PropertiesPanel::PropertiesPanel(QWidget* parent) : BPanel(parent) {
@@ -157,9 +173,17 @@ PropertiesPanel::PropertiesPanel(QWidget* parent) : BPanel(parent) {
     
     this->layout()->addWidget(mTabWidget);
 
+    auto* page = new IdkRandomPage(mTabWidget);
+
     this->addPage(new CueGeneralPage(mTabWidget));
     this->addPage(new TextCuePage(mTabWidget));
-    this->addPage(new IdkRandomPage(mTabWidget));
+    this->addPage(page);
+
+    
+    //Temporary
+    mTabWidget->setTabVisible(2, false); // !
+    mTabWidget->addTab(new TestPanel(this), "Testing stuff");
+
 
 }
 

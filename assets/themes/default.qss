@@ -45,6 +45,9 @@ BPanel {
     margin:0;
     padding:0;
 }
+BPanel[focused] {
+    border-color: $hl_fg1;
+}
 
 QSplitter {
     margin:0;
@@ -329,6 +332,44 @@ QToolTip {
     color: $text1;
     padding:2px;
     font-size:10pt;
+}
+
+QTableView {
+    background:transparent;
+    
+}
+
+QHeaderView::section {
+    color: $text1;
+    font-weight:bold;
+    background: $bg4;
+    font-style:normal;
+    border: none;
+    border-right: 1px solid $bg2;
+}
+
+QScrollBar::vertical {
+    width:12px;
+    margin:0px;
+    background:transparent;
+}
+QScrollBar::handle:vertical {
+    background: $bg4;
+    border-radius: 3px;
+}
+QScrollBar::handle:hover {
+    border:1px solid $hl_fg2;
+}
+QScrollBar::handle:pressed {
+    background: $hl_fg1;
+    border:1px solid $hl_fg2;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: transparent;
 }
 
 /* --------------------------------------------------- */

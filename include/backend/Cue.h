@@ -22,9 +22,14 @@ public:
     uint mPostWait = 0; //msec
     CueAction mNextAction = Default;
     CueState mState = Stopped;
+
+    explicit Cue(const QString& name, const QString& description = "");
+
+    virtual ~Cue() = default;
 };
 
 class MediaCue : public Cue {
-public:
-    MediaCue();
+};
+
+class TextCue : public Cue {
 };

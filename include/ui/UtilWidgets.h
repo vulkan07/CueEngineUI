@@ -34,8 +34,6 @@ public:
 
 class AboutCueEngineWidget : public QDialog {
     Q_OBJECT
-private:
-    QAction* mCloseAction;
 public:
     explicit AboutCueEngineWidget(QWidget* parent);
 };

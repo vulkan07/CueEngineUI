@@ -11,7 +11,9 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QMap>
-
+#include <QSplitter>
+#include <QResizeEvent>
+#include <QSettings>
 
 class SecondaryWindow : public QFrame {
     Q_OBJECT
@@ -26,6 +28,10 @@ signals:
 class QTUI : public QFrame {
     Q_OBJECT
 private:
+
+    QSplitter* mMainSplitter;
+    QSplitter* mLeftSplitter;
+    QSplitter* mRightSplitter;
 
     SecondaryWindow* mSecondaryWindow;
 
@@ -63,12 +69,14 @@ private:
     // About menu
     QAction* mAboutCueEngineAction;
     QAction* mAboutQtAction;
+
 public:
     explicit QTUI(QWidget* parent);
     void start();
     void applyTheme(QString path);
 
     void closeEvent(QCloseEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
 
     void onNewAction();
     void onOpenAction();
@@ -92,6 +100,10 @@ public:
 
     void onAboutCueEngineAction();
     void onAboutQtAction();
+
+    static const int RIGHT_PANEL_WIDTH = 250;
+    static const int TOP_PANEL_HEIGHT = 225;
+    static const int BOTTOM_PANEL_HEIGHT = 300;
 };
 
 
@@ -103,8 +115,12 @@ class ShortcutManager : public QObject {
 private:
     static QMap<QString, QAction*> actions;
 public:
-    static void registerAction(const QString& id, QAction* action);
-    
+    const static QString SETTINGS_PREFIX;
+    static void registerAction(const QString& name, QAction* action);
+
     // also return an iterator maybe rather than the list itself?
     static const QMap<QString, QAction*>& getActions();
+
+    static void loadShortcutsFromSettings();
+    static void saveShortcutsToSettings();
 };

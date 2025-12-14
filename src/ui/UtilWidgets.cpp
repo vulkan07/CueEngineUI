@@ -17,7 +17,7 @@ SettingsWidget::SettingsWidget(QWidget* parent) : QDialog(parent) {
     this->setWindowModality(Qt::ApplicationModal);
     this->setWindowTitle("Settings");
 
-    this->setMinimumSize(QSize(500,400));
+    this->setMinimumSize(QSize(700,550));
     this->resize(QSize(800,640));
 
 
@@ -62,7 +62,8 @@ void SettingsWidget::okPressed() {
     this->accept();
 }
 void SettingsWidget::applySettings() {
-    
+    ShortcutManager::saveShortcutsToSettings();
+    ShortcutManager::loadShortcutsFromSettings(); // REMOVE TODO test xxx 
 }
 
 
@@ -99,11 +100,6 @@ AboutCueEngineWidget::AboutCueEngineWidget(QWidget* parent)
     layout->addWidget(l);
     layout->addWidget(btn);
 
-    mCloseAction = new QAction(this);
-    mCloseAction->setShortcut(QKeySequence::Close);
-
-
-    connect(mCloseAction, &QAction::triggered, this, &AboutCueEngineWidget::done);
     connect(btn, &QPushButton::pressed, this, [=](){this->done(0);}); // hmm cursed
 
 }

@@ -41,6 +41,9 @@ qt_add_executable(CueEngine
     "include/backend/Cue.h"
     "src/backend/Cue.cpp"
 
+    "include/ui/CueListModel.h"
+    "src/ui/CueListModel.cpp"
+
     "include/backend/Backend.h"
     "src/backend/Backend.cpp"
 

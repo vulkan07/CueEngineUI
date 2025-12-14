@@ -2,6 +2,7 @@
 #include <QApplication>
 #include "ui/QTUI.h"
 
+#include <backend/Backend.h>
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);

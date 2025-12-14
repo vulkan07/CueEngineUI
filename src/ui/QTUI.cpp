@@ -1,11 +1,12 @@
 #include "ui/QTUI.h"
 
 #include <QVBoxLayout>
-#include <QSplitter>
 #include <QFile>
 #include <QDir>
 
 #include <iostream>
+#include <QVariant>
+
 
 QTUI::QTUI(QWidget* parent)
     : QFrame(parent) {
@@ -13,6 +14,10 @@ QTUI::QTUI(QWidget* parent)
 }
 
 void QTUI::start() {
+
+    QCoreApplication::setOrganizationName("KFG Studio");
+    QCoreApplication::setApplicationName("Cue Engine");
+
     this->applyTheme(":/assets/themes/default.qss");
 
     auto* layout = new QVBoxLayout(this);
@@ -66,7 +71,7 @@ void QTUI::start() {
     mOpenAction->setShortcuts(QKeySequence::Open);
     mSaveAction->setShortcuts(QKeySequence::Save);
     mSaveAsAction->setShortcuts(QKeySequence::SaveAs);
-    mPreferencesAction->setShortcuts(QKeySequence::Preferences);
+    mPreferencesAction->setShortcut(QKeySequence("Alt+S"));
     mExitAction->setShortcuts(QKeySequence::Quit);
     //
     mUndoAction->setShortcuts(QKeySequence::Undo);
@@ -74,9 +79,9 @@ void QTUI::start() {
     mCutAction->setShortcuts(QKeySequence::Cut);
     mCopyAction->setShortcuts(QKeySequence::Copy);
     mPasteAction->setShortcuts(QKeySequence::Paste);
-    // TODO ctrl+d mUndoAction->setShortcuts(QKeySequence::new);
+    mDuplicateAction->setShortcut(QKeySequence("Ctrl+D"));
     mSelectAllAction->setShortcuts(QKeySequence::SelectAll);
-    // TODO mSelectAllAction->setShortcuts(QKeySequence::Deselect);
+    mDeselectAllAction->setShortcut(QKeySequence("Ctrl+Shift+A"));
 
     connect(mNewAction, &QAction::triggered, this, &QTUI::onNewAction);
     connect(mOpenAction, &QAction::triggered, this, &QTUI::onOpenAction);
@@ -136,47 +141,74 @@ void QTUI::start() {
 
 
     /*---------- Panels ----------*/
-    QSplitter* splitter = new QSplitter(Qt::Horizontal, this);
-    QSplitter* lSplitter = new QSplitter(Qt::Vertical, this);
-    QSplitter* rSplitter = new QSplitter(Qt::Vertical, this);
+    mMainSplitter = new QSplitter(Qt::Horizontal, this);
+    mLeftSplitter = new QSplitter(Qt::Vertical, this);
+    mRightSplitter = new QSplitter(Qt::Vertical, this);
 
-    BPanel* playingPanel = new PlayingPanel(lSplitter);
-    BPanel* cueListPanel = new CueListPanel(lSplitter);
-    BPanel* propertiesPanel = new PropertiesPanel(lSplitter);
-    BPanel* statusPanel = new StatusPanel(rSplitter);
-    BPanel* miscPanel = new MiscPanel(rSplitter);
+    BPanel* playingPanel = new PlayingPanel(mLeftSplitter);
+    BPanel* cueListPanel = new CueListPanel(mLeftSplitter);
+    BPanel* propertiesPanel = new PropertiesPanel(mLeftSplitter);
+    BPanel* statusPanel = new StatusPanel(mRightSplitter);
+    BPanel* miscPanel = new MiscPanel(mRightSplitter);
     
-    splitter->setHandleWidth(6);
-    lSplitter->setHandleWidth(6);
-    rSplitter->setHandleWidth(6);
+    mMainSplitter->setHandleWidth(6);
+    mLeftSplitter->setHandleWidth(6);
+    mRightSplitter->setHandleWidth(6);
 
-    lSplitter->addWidget(playingPanel);
-    lSplitter->addWidget(cueListPanel);
-    lSplitter->addWidget(propertiesPanel);
-    rSplitter->addWidget(statusPanel);
-    rSplitter->addWidget(miscPanel);
+    mLeftSplitter->addWidget(playingPanel);
+    mLeftSplitter->addWidget(cueListPanel);
+    mLeftSplitter->addWidget(propertiesPanel);
+    mRightSplitter->addWidget(statusPanel);
+    mRightSplitter->addWidget(miscPanel);
 
-    splitter->addWidget(lSplitter);
-    splitter->addWidget(rSplitter);
+    mMainSplitter->addWidget(mLeftSplitter);
+    mMainSplitter->addWidget(mRightSplitter);
 
-    splitter->setContentsMargins(0,0,0,0);
-    lSplitter->setContentsMargins(0,0,0,0);
-    rSplitter->setContentsMargins(0,0,0,0);
+    mMainSplitter->setContentsMargins(0,0,0,0);
+    mLeftSplitter->setContentsMargins(0,0,0,0);
+    mRightSplitter->setContentsMargins(0,0,0,0);
 
-    layout->addWidget(splitter);    
+    layout->addWidget(mMainSplitter);    
     this->setContentsMargins(2,0,2,3); 
     layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(0);
 
-    splitter->setSizes({1920,300});
-    lSplitter->setSizes({250,1080,400});
+    mMainSplitter->setSizes({width(), RIGHT_PANEL_WIDTH});  
+    mLeftSplitter->setSizes({TOP_PANEL_HEIGHT, height(), BOTTOM_PANEL_HEIGHT});   
 
     this->setWindowTitle("Cue Engine");
     this->setLayout(layout);
     this->show();
-
     mSecondaryWindow = new SecondaryWindow(); // starts hidden
     connect(mSecondaryWindow, &SecondaryWindow::closed, this, [&]{mSecondaryWindowAction->setChecked(false);});
+
+    ShortcutManager::loadShortcutsFromSettings();
+}
+
+void QTUI::closeEvent(QCloseEvent* event) {
+    QFrame::closeEvent(event);
+    this->onExitAction();
+}
+
+void QTUI::resizeEvent(QResizeEvent* event) {
+    QFrame::resizeEvent(event);
+    
+    QList<int> sizes = mMainSplitter->sizes();
+
+    if (sizes.length() != 2) return;
+
+    if (width() < 900) {
+        mMainSplitter->setSizes({width(), 0});
+    } else {
+        mMainSplitter->setSizes({width()-RIGHT_PANEL_WIDTH, RIGHT_PANEL_WIDTH});
+    }
+
+    if (height() < 800) {
+        mLeftSplitter->setSizes({TOP_PANEL_HEIGHT, height()-TOP_PANEL_HEIGHT, 0});
+    } else {
+        mLeftSplitter->setSizes({TOP_PANEL_HEIGHT, height()-TOP_PANEL_HEIGHT-BOTTOM_PANEL_HEIGHT, BOTTOM_PANEL_HEIGHT});    
+    }
+    
 }
 
 void QTUI::applyTheme(QString path) {
@@ -185,18 +217,12 @@ void QTUI::applyTheme(QString path) {
 }
 
 
-void QTUI::closeEvent(QCloseEvent* event) {
-    this->onExitAction();
-    QFrame::closeEvent(event);
-}
-
 void QTUI::onNewAction() {}
 void QTUI::onOpenAction() {}
 void QTUI::onSaveAction() {}
 void QTUI::onSaveAsAction() {}
 void QTUI::onPreferencesAction() {
-    SettingsWidget w = SettingsWidget(this);
-    w.exec();
+    SettingsWidget(this).exec();
 }
 void QTUI::onExitAction() {
     qApp->exit(); 
@@ -231,23 +257,56 @@ SecondaryWindow::SecondaryWindow() : QFrame() {
     this->setLayout(new QVBoxLayout(this));
     this->setObjectName("SecondaryWindow");
     this->layout()->addWidget(new QLabel("balls+",this));
+    this->setMinimumSize(400,400);
 }
 void SecondaryWindow::closeEvent(QCloseEvent* event) {
     emit closed();
-} 
+}
 
 
+
+const QString ShortcutManager::SETTINGS_PREFIX = "shortcuts";
 
 QMap<QString, QAction*> ShortcutManager::actions = QMap<QString, QAction*>();
 
-void ShortcutManager::registerAction(const QString& id, QAction* action) {
-    ShortcutManager::actions[id] = action;
+void ShortcutManager::registerAction(const QString& name, QAction* action) {
+    ShortcutManager::actions[name] = action;
 }
 
 const QMap<QString, QAction*>& ShortcutManager::getActions() {
     return ShortcutManager::actions;
 }
 
+void ShortcutManager::loadShortcutsFromSettings() {
+    QSettings settings;
+    settings.beginGroup(SETTINGS_PREFIX);
+
+    for (auto i = actions.cbegin(), end = actions.cend(); i != end; ++i) {
+        
+        auto stringList = settings.value(i.key()).toStringList();
+        QList<QKeySequence> sequences; 
+        
+        for (auto sequence : stringList) {
+            sequences.push_back(QKeySequence(sequence));
+        }
+
+        i.value()->setShortcuts(sequences);
+    }
+    settings.endGroup();
+}
+
+void ShortcutManager::saveShortcutsToSettings() {
+    QSettings settings;
+    settings.beginGroup(SETTINGS_PREFIX);
+    for (auto i = actions.cbegin(), end = actions.cend(); i != end; ++i) {
+        QStringList list;
+        for (auto s : i.value()->shortcuts()) {
+            list.push_back(s.toString());
+        }
+        settings.setValue(i.key(), list);
+    }
+    settings.endGroup();
+}
 
 
 /*================== Qt C++ Wisdom ==================
