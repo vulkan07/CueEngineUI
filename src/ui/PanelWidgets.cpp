@@ -151,17 +151,31 @@ CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
     }
     this->layout()->setContentsMargins(0,0,0,0);
     auto* view = new QTableView(this);
-    auto* model = new CueListModel(this);
-    view->setModel(model);
+    
+    view->setModel(new CueListModel(this));
+    view->setItemDelegate(new CueListItemDelegate(view));
 
     view->setSelectionBehavior(QAbstractItemView::SelectRows);
     view->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    view->horizontalHeader()->setStretchLastSection(true);
     view->verticalHeader()->setVisible(false);
 
     view->setAlternatingRowColors(false);
     view->setSortingEnabled(false);
+    view->setShowGrid(true); // !!!
+
+
+
+    auto h = view->horizontalHeader();
+    h->setStretchLastSection(false);
+    for (int i = 0; i < COLUMNS.size(); i++) {
+        auto resizeMode = COLUMNS[i].resizeMode;
+
+        h->setSectionResizeMode(i, resizeMode);
+
+        if (resizeMode != QHeaderView::Stretch) 
+            h->resizeSection(i, COLUMNS[i].width);
+    }
 
     layout()->addWidget(view);
 }
