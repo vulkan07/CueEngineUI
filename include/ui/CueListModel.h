@@ -7,33 +7,6 @@
 
 #include <backend/Backend.h>
 
-#include <array>
-
-
-enum class CueListColumns : int {
-    INDEX,
-    NAME,
-    DESCRIPTION,
-    PRE_WAIT,
-    DURATION,
-    POST_WAIT,
-    NEXT_ACTION,
-    _COUNT_
-};
-struct ColumnData {
-    const char* name;
-    int width;
-    QHeaderView::ResizeMode resizeMode = QHeaderView::Interactive;
-};
-static constexpr std::array<ColumnData, static_cast<int>(CueListColumns::_COUNT_)> COLUMNS {{
-    {"#", 30, QHeaderView::Fixed},
-    {"Name", 150},
-    {"Description", 800, QHeaderView::Stretch},
-    {"Pre Wait", 100},
-    {"Duration", 150},
-    {"Post Wait", 100},
-    {"", 30},
-}};
 
 class CueListModel : public QAbstractTableModel {
     Q_OBJECT

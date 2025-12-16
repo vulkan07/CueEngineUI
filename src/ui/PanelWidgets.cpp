@@ -1,7 +1,7 @@
 #include "ui/PanelWidgets.h"
+#include "backend/Backend.h"
 
 #include <QBoxLayout>
-
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QTime>
@@ -140,45 +140,32 @@ void StatusPanel::resizeEvent(QResizeEvent* event) {
 
 
 MiscPanel::MiscPanel(QWidget* parent) : BPanel(parent) {}
+
 PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {}
-#include <QTableView>
-#include <QHeaderView>
-#include <ui/CueListModel.h>
+
 CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
 
-    for (int i = 0; i < 40; i++) {
+    for (int i = 0; i < 30; i++) {
         backend.addCue(std::make_unique<Cue>("I'm a cue!", "faszom nagyon hosszue leiras blah blhah leiras"));
     }
+
     this->layout()->setContentsMargins(0,0,0,0);
-    auto* view = new QTableView(this);
+    this->layout()->setSpacing(CueListWidget::GAP_WIDTH+1);
     
-    view->setModel(new CueListModel(this));
-    view->setItemDelegate(new CueListItemDelegate(view));
 
-    view->setSelectionBehavior(QAbstractItemView::SelectRows);
-    view->setSelectionMode(QAbstractItemView::SingleSelection);
+    mHeaderWidget = new CueListHeader(this);
+    mCueListWidget = new CueListWidget(mHeaderWidget, this);
+    mScrollWidget = new QScrollArea(this);
 
-    view->verticalHeader()->setVisible(false);
+    mScrollWidget->setWidgetResizable(true);
+    mScrollWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    mScrollWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    mScrollWidget->setWidget(mCueListWidget);
 
-    view->setAlternatingRowColors(false);
-    view->setSortingEnabled(false);
-    view->setShowGrid(true); // !!!
-
-
-
-    auto h = view->horizontalHeader();
-    h->setStretchLastSection(false);
-    for (int i = 0; i < COLUMNS.size(); i++) {
-        auto resizeMode = COLUMNS[i].resizeMode;
-
-        h->setSectionResizeMode(i, resizeMode);
-
-        if (resizeMode != QHeaderView::Stretch) 
-            h->resizeSection(i, COLUMNS[i].width);
-    }
-
-    layout()->addWidget(view);
+    this->layout()->addWidget(mHeaderWidget);
+    this->layout()->addWidget(mScrollWidget);
 }
+
 
 PropertiesPanel::PropertiesPanel(QWidget* parent) : BPanel(parent) {
     this->layout()->setContentsMargins(0,2,0,0);

@@ -9,6 +9,8 @@
 #include <QTabWidget>
 
 #include "ui/PropertyTabWidgets.h"
+#include "ui/CueListWidget.h"
+
 
 class BPanel : public QFrame {
     Q_OBJECT
@@ -46,6 +48,10 @@ public:
 
 class CueListPanel : public BPanel {
     Q_OBJECT
+private:
+    QScrollArea* mScrollWidget;
+    CueListHeader* mHeaderWidget;
+    CueListWidget* mCueListWidget;
 public:
     explicit CueListPanel(QWidget* parent);
 };
