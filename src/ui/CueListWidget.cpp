@@ -6,6 +6,8 @@
 #include <QPainter>
 #include <QPaintEvent>
 
+#include <algorithm>
+
 CueListHeader::CueListHeader(QWidget* parent) : QWidget(parent) {
     auto* layout = new QHBoxLayout(this);
     layout->setContentsMargins(0,0,11,0); // 11 = scrollbar width
@@ -45,25 +47,22 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
     p.setRenderHint(QPainter::Antialiasing);
     p.setClipRegion(event->region());
 
+    // Don't render rows that are outside viewport
+    int startRow = event->region().boundingRect().top() / ROW_TOTAL_H;
+    int endRow = event->region().boundingRect().bottom() / ROW_TOTAL_H +1;
+    
     //top-left point of each cell
     int xBasis = 0;
     int yBasis;
+
 
     for (int i = 0; i < CueListColumns.size(); i++) {
         
         int width = header->getHeaderWidth(i);
         auto column = CueListColumns[i];
-        yBasis = 0;
+        yBasis = startRow*ROW_TOTAL_H;
 
-        for (int j = 0; j < backend.getLength(); j++) {
-            
-            // skip if outside viewport
-            if (yBasis+ROW_HEIGHT < event->region().boundingRect().top()) { // above
-                yBasis += ROW_TOTAL_H;
-                continue;
-            }
-            if (yBasis > event->region().boundingRect().bottom()) // below
-                break;
+        for (int j = startRow; j < std::min(backend.getLength(), (size_t)endRow); j++) {
             
             // Background fill
             QRect rect {xBasis, yBasis, width, ROW_HEIGHT}; // the whole cell
@@ -84,7 +83,7 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
                 case CueListColumnTypes::PRE_WAIT:
                     break;
                 case CueListColumnTypes::DURATION:
-                    p.fillRect(rect.adjusted(0,0, -width*(j*0.01) ,0), QBrush("#443030c0")); // TODO un-hardcode bg color
+                    p.fillRect(rect.adjusted(0,0, -width*(j*0.01) ,0), QBrush("#604040c0")); // TODO un-hardcode bg color
                     break;
                 case CueListColumnTypes::POST_WAIT:
                     break;
@@ -117,11 +116,21 @@ void CueListWidget::setStandbyIndex(int index) {
     mStandbyIndex = index;
     if (mStandbyIndex >= backend.getLength() || mStandbyIndex < 0) {
         mStandbyIndex = oldIndex;
+
         return;
     }
 
     mTargetCursorPos = mStandbyIndex*ROW_TOTAL_H;
-    mAnimHandle = AnimationClock::getInstance().resumeAnimation();
+    if (AnimationClock::getInstance().isAnimationsEnabled() == false) {float prevPos = mCursorPos;
+        mCursorPos = mTargetCursorPos; 
+        this->repaint(
+                QRect(0, mCursorPos - GAP_WIDTH, width(), ROW_TOTAL_H+GAP_WIDTH*2) | 
+                QRect(0, prevPos - GAP_WIDTH, width(), ROW_TOTAL_H+GAP_WIDTH*2)
+            );
+    }
+    else if (!mAnimHandle) {
+        mAnimHandle = AnimationClock::getInstance().resumeAnimation();
+    }
 }
 
 int CueListWidget::standbyIndex() { return mStandbyIndex; }
@@ -130,12 +139,13 @@ void CueListWidget::animationTick(float dt) {
     if (!mAnimHandle) return;
 
     float oldPos = mCursorPos;
-    mCursorPos = lerp(mCursorPos, mTargetCursorPos, decayToLerpConstant(39, dt));
+    float dist = fabs(mCursorPos-mTargetCursorPos);
+    mCursorPos = lerp(mCursorPos, mTargetCursorPos, decayToLerpConstant(lerpSpeedBoost(60,dist,60), dt));
     
-    if (fabs(mCursorPos-mTargetCursorPos) < PIXEL_SNAP_THERSHOLD) {
-        qDebug() << "end";
+    if (dist < PIXEL_SNAP_THERSHOLD) {
         mCursorPos = mTargetCursorPos;
         mAnimHandle->done();
+        mAnimHandle = nullptr; // TODO THIS IS ASS!
     }
     
     this->repaint(

@@ -5,6 +5,8 @@
 #include <QTabWidget>
 #include <QDialogButtonBox>
 #include <QFormLayout>
+#include <QCheckBox>
+#include <QSpinBox>
 
 
 class SettingsShortcutsPage : public QWidget {
@@ -17,12 +19,24 @@ public:
     void applyShortcut(QAction* action, const QKeySequence& sequence);
 };
 
+class SettingsInterfacePage : public QWidget {
+    Q_OBJECT
+private:
+    QFormLayout* mLayout;
+    QCheckBox* mDoAnimationsCheckBox;
+    QSpinBox* mAnimFrameRateSpinBox;
+public:
+    explicit SettingsInterfacePage(QWidget* parent);
+    void apply();
+};
+
 class SettingsWidget : public QDialog {
     Q_OBJECT
 private:
     QTabWidget* mTabsWidget;
     QDialogButtonBox* mButtons;
     SettingsShortcutsPage* mShortcutsPage;
+    SettingsInterfacePage* mInterfacePage;
 public:
     explicit SettingsWidget(QWidget* parent);
     void applyPressed();

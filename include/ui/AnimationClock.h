@@ -9,8 +9,8 @@
 class AnimationHandle {
 public:
     AnimationHandle() = default;
-    void done(); // just an alias for destructor
     ~AnimationHandle();
+    void done(); // just an alias for destructor
 };
 
 // This class stores a global clock that ticks at a set framerate,
@@ -19,7 +19,10 @@ public:
 class AnimationClock : public QObject {
     Q_OBJECT
     friend class AnimationHandle;
+
 private:
+    bool mAnimationsEnabled = true;
+
     QTimer mTimer;
     QElapsedTimer mElapsedTimer; 
     int mRunningAnimCount = 0;
@@ -30,7 +33,9 @@ private:
     void decrementRunningCount();
 
 public:
-    static const int DEFAULT_FRAME_RATE = 20;
+    static const int MIN_FRAME_RATE = 20;
+    static const int DEFAULT_FRAME_RATE = 60;
+    static const int MAX_FRAME_RATE = 144;
 
     static AnimationClock& getInstance() {
         static AnimationClock animClock;
@@ -42,18 +47,32 @@ public:
     void setFrameRate(int frameRate);
     int getFrameRate() const;
 
+
+    void setAnimationsEnabled(bool enabled);
+    bool isAnimationsEnabled() const;
+
+    // Returns a handle whose lifetime indicates that the animation is running, or nullptr if animations are disabled
     AnimationHandle* const resumeAnimation();
+
 
 signals:
     void tick(float dt);
 };
 
-static constexpr float PIXEL_SNAP_THERSHOLD = .3f;
 
-// Animation helper functions
+
+// ------------- Animation helpers ------------- //
+
+static constexpr float PIXEL_SNAP_THERSHOLD = 0.3f;
+
+
+static inline float lerpSpeedBoost(float speed, float dist, float boost) {
+    return speed + boost*1.0f/(dist+.1f);
+}
 
 static inline float decayToLerpConstant(float k, float dt) {
-    return k * dt / (1.0f + k * dt);
+    auto q = (1.0f + k * dt);
+    return k * dt / q;
 }
 
 static inline float lerp(float value, float target, float f) {

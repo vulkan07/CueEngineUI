@@ -15,6 +15,13 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 find_package(spdlog REQUIRED)
 
 
+#set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+# set(CMAKE_CXX_FLAGS_DEBUG
+#     "-fsanitize=address -fno-omit-frame-pointer -g")
+# set(CMAKE_LINKER_FLAGS_DEBUG
+#     "-fsanitize=address")
 
 
 # Note: Auto MOC doesn't work for some reason,
