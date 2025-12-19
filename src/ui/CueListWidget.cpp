@@ -31,11 +31,13 @@ int CueListHeader::getHeaderWidth(int index) const {
 }
 
 
+
 CueListWidget::CueListWidget(CueListHeader* const header, QWidget* parent) : QWidget(parent), header(header) {
-    this->setMouseTracking(true);
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    
-    this->setFixedHeight((backend.getLength()+2) * (ROW_HEIGHT+GAP_WIDTH)); // TODO this should update
+
+    connect(&AnimationClock::getInstance(), &AnimationClock::tick, this, &CueListWidget::animationTick);
+
+    this->setFixedHeight((backend.getLength()+2) * ROW_TOTAL_H); // TODO this should update
 }
 
 void CueListWidget::paintEvent(QPaintEvent* event) {
@@ -57,32 +59,32 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
             
             // skip if outside viewport
             if (yBasis+ROW_HEIGHT < event->region().boundingRect().top()) { // above
-                yBasis += ROW_HEIGHT + GAP_WIDTH;
+                yBasis += ROW_TOTAL_H;
                 continue;
             }
             if (yBasis > event->region().boundingRect().bottom()) // below
                 break;
             
-
-            QRect rect {xBasis, yBasis, width, ROW_HEIGHT};
-            
+            // Background fill
+            QRect rect {xBasis, yBasis, width, ROW_HEIGHT}; // the whole cell
             p.fillRect(rect, QBrush(j%2 ? "#1d1d1f" : "#222224")); // TODO un-hardcode bg color
 
-            rect = rect.marginsRemoved(QMargins()+CELL_PADDING); // TODO un-hardcode text padding
-
+            // Text
+            QRect paddedRect = rect.marginsRemoved(QMargins()+CELL_PADDING); // TODO un-hardcode text padding
             switch (static_cast<CueListColumnTypes>(i)) {
                 case CueListColumnTypes::INDEX:
-                    p.drawText(rect, column.textAlignment, QString::number(j+1));
+                    p.drawText(paddedRect, column.textAlignment, QString::number(j+1));
                     break;
                 case CueListColumnTypes::NAME:
-                    p.drawText(rect, column.textAlignment, backend.getCue(j)->mName);
+                    p.drawText(paddedRect, column.textAlignment, backend.getCue(j)->mName);
                     break;
                 case CueListColumnTypes::DESCRIPTION:
-                    p.drawText(rect, column.textAlignment, backend.getCue(j)->mDescription);
+                    p.drawText(paddedRect, column.textAlignment, backend.getCue(j)->mDescription);
                     break;
                 case CueListColumnTypes::PRE_WAIT:
                     break;
                 case CueListColumnTypes::DURATION:
+                    p.fillRect(rect.adjusted(0,0, -width*(j*0.01) ,0), QBrush("#443030c0")); // TODO un-hardcode bg color
                     break;
                 case CueListColumnTypes::POST_WAIT:
                     break;
@@ -90,8 +92,66 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
                     break;
                 default:; // suppress warning for _COUNT_
             }
-            yBasis += ROW_HEIGHT + GAP_WIDTH;
+            yBasis += ROW_TOTAL_H;
         }
         xBasis += width + GAP_WIDTH;
     }
+
+    // Mouse "cursor"
+    int w = 2;
+    double whalf = w/2;
+    QRectF rect = {(double)whalf, mCursorPos-whalf , (double)width()-w, (double)ROW_HEIGHT+w};
+    p.setPen(QPen(QColor(200,200,255),w));
+    p.setBrush(QColor(110,110,255,30));
+    p.drawRect(rect);
+}
+
+
+void CueListWidget::mousePressEvent(QMouseEvent* event) {
+    this->setStandbyIndex( (event->pos().y() - GAP_WIDTH) / ROW_TOTAL_H );
+}
+
+//TODO remake this in a less ass way
+void CueListWidget::setStandbyIndex(int index) {
+    int oldIndex = mStandbyIndex;
+    mStandbyIndex = index;
+    if (mStandbyIndex >= backend.getLength() || mStandbyIndex < 0) {
+        mStandbyIndex = oldIndex;
+        return;
+    }
+
+    mTargetCursorPos = mStandbyIndex*ROW_TOTAL_H;
+    mAnimHandle = AnimationClock::getInstance().resumeAnimation();
+}
+
+int CueListWidget::standbyIndex() { return mStandbyIndex; }
+
+void CueListWidget::animationTick(float dt) {
+    if (!mAnimHandle) return;
+
+    float oldPos = mCursorPos;
+    mCursorPos = lerp(mCursorPos, mTargetCursorPos, decayToLerpConstant(39, dt));
+    
+    if (fabs(mCursorPos-mTargetCursorPos) < PIXEL_SNAP_THERSHOLD) {
+        qDebug() << "end";
+        mCursorPos = mTargetCursorPos;
+        mAnimHandle->done();
+    }
+    
+    this->repaint(
+        QRect(0, mCursorPos - GAP_WIDTH, width(), ROW_TOTAL_H+GAP_WIDTH*2) | 
+        QRect(0, oldPos - GAP_WIDTH, width(), ROW_TOTAL_H+GAP_WIDTH*2)
+    );
+}
+
+void CueListWidget::onUpAction() {
+    setStandbyIndex(standbyIndex()-1);
+}
+
+void CueListWidget::onDownAction() {
+    setStandbyIndex(standbyIndex()+1);
+}// azt nem tudom hogy a templomban az orgona az rendelkezik e python compilerrrel, mert klaviatura van rajta tehat gepelni lehet vele - Taki 2025
+
+void CueListWidget::onPlayAction() {
+    qDebug() << "PLAY";
 }

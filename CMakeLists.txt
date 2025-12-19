@@ -44,6 +44,9 @@ qt_add_executable(CueEngine
     "include/ui/CueListWidget.h"
     "src/ui/CueListWidget.cpp"
 
+    "include/ui/AnimationClock.h"
+    "src/ui/AnimationClock.cpp"
+
     "include/backend/Backend.h"
     "src/backend/Backend.cpp"
 

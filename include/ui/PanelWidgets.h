@@ -52,6 +52,10 @@ private:
     QScrollArea* mScrollWidget;
     CueListHeader* mHeaderWidget;
     CueListWidget* mCueListWidget;
+
+    QAction* mDownAction;
+    QAction* mUpAction;
+    QAction* mPlayAction;
 public:
     explicit CueListPanel(QWidget* parent);
 };

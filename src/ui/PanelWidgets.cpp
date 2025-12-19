@@ -1,4 +1,5 @@
 #include "ui/PanelWidgets.h"
+#include "ui/QTUI.h"
 #include "backend/Backend.h"
 
 #include <QBoxLayout>
@@ -145,7 +146,7 @@ PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {}
 
 CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
 
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < 67; i++) {
         backend.addCue(std::make_unique<Cue>("I'm a cue!", "faszom nagyon hosszue leiras blah blhah leiras"));
     }
 
@@ -161,6 +162,27 @@ CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
     mScrollWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     mScrollWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     mScrollWidget->setWidget(mCueListWidget);
+
+
+    mUpAction = new QAction(this);
+    mDownAction = new QAction(this);
+    mPlayAction = new QAction(this);
+
+    mUpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    mDownAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    mPlayAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+    mUpAction->setShortcut(QKeySequence("Up"));
+    mDownAction->setShortcut(QKeySequence("Down"));
+    mPlayAction->setShortcuts({QKeySequence("Space"),QKeySequence("Return")});
+
+    connect(mUpAction, &QAction::triggered, mCueListWidget, &CueListWidget::onUpAction);
+    connect(mDownAction, &QAction::triggered, mCueListWidget, &CueListWidget::onDownAction);
+    connect(mPlayAction, &QAction::triggered, mCueListWidget, &CueListWidget::onPlayAction);
+
+    this->addActions({mUpAction,mDownAction,mPlayAction});
+
+    ShortcutManager::registerAction("Play Cue", mPlayAction);
 
     this->layout()->addWidget(mHeaderWidget);
     this->layout()->addWidget(mScrollWidget);

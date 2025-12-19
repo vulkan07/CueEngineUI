@@ -5,6 +5,8 @@
 #include <vector>
 #include <array>
 
+#include "ui/AnimationClock.h"
+
 enum class CueListColumnTypes : int {
     INDEX,
     NAME,
@@ -52,14 +54,30 @@ public:
 class CueListWidget : public QWidget {
     Q_OBJECT
 private:
+    float mCursorPos = 0;
+    float mTargetCursorPos = 0;
+    AnimationHandle* mAnimHandle = nullptr;
+
+    int mStandbyIndex;
     const CueListHeader* const header; // only reference, not owned by this
 public:
     static const int GAP_WIDTH = 2;
     static const int ROW_HEIGHT = 28;
     static const int CELL_PADDING = 4;
+    static const int ROW_TOTAL_H = ROW_HEIGHT+GAP_WIDTH;
 
     explicit CueListWidget(CueListHeader* const header, QWidget* parent = nullptr);
 
+    void onUpAction();
+    void onDownAction();
+    void onPlayAction();
+
+    void setStandbyIndex(int index);
+    int standbyIndex();
+
+    void animationTick(float dt);
+
 protected:
     void paintEvent(QPaintEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
 };
