@@ -8,7 +8,7 @@ $bg4 = #343434
 $border1 = 3px
 $border2 = 6px
 $text1 = #ffffff
-$text2 = #d2d2d2
+$text2 = #ababab
 
 $hl_fg1 = #344691
 $hl_fg2 = #8f97ef
@@ -182,24 +182,24 @@ QMenuBar::item:pressed {
 
 QMenu {
     font-size:10.2pt;
-    background: $bg3;
+    background: $bg2;
     border: $border_w solid $bg4;
     border-radius: $border1;
-    padding:0;
+    padding: 0;
 }
 
 
 QMenu::item {
     color: $text1;
-    padding: 5px 8px;
+    padding: 5px 11px 6px 15px;
 }
 
 QMenu::item:selected {
     background: $hl_fg1;
 }
 
-QMenu::icon{
-    padding-left:9px;
+QMenu::icon {
+    padding-left: 14px;
 }
 
 QMenu::separator {
@@ -253,7 +253,7 @@ QMenu::indicator:unchecked:disabled {
 }
 
 QPushButton {
-    padding: 2px 4px;
+    padding: 4px 4px;
     background: $bg3;
     border: $border_w solid $bg4;
 }
@@ -288,7 +288,7 @@ QTabWidget::pane {
 }
 
 QTabBar::tab {
-    padding: 4px 6px;
+    padding: 4px 12px;
     border: $border_w solid $bg3;
     border-bottom: none;
     border-top-left-radius: 4;
@@ -339,10 +339,10 @@ QScrollBar {
     background: $bg2;
 }
 QScrollBar::vertical {
-    width:11px;
+    width:10px;
 }
 QScrollBar::horizontal {
-    height:11px;
+    height:10px;
 }
 QScrollBar::handle {
     background: $bg4;
@@ -376,6 +376,7 @@ CueListHeader > QLabel {
     border-radius: 0;
     margin: 0;
     padding: 3px 0px;
+    border-bottom: 2px solid $bg2;
 }
 
 CueListPanel QScrollArea {

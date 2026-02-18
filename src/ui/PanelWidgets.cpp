@@ -145,14 +145,14 @@ MiscPanel::MiscPanel(QWidget* parent) : BPanel(parent) {}
 PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {}
 
 CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
-
-    for (int i = 0; i < 67; i++) {
-        backend.addCue(std::make_unique<Cue>("I'm a cue!", "faszom nagyon hosszue leiras blah blhah leiras"));
-    }
+    srand(QDateTime::currentMSecsSinceEpoch());
+    backend.addCue(std::make_unique<MediaCue>("I'm a media cue!", (rand()%200000), "this is a basic cue"));
+    for (int i = 0; i < 36; i++) 
+        backend.addCue(std::make_unique<TextCue>("I'm a text cue!", "super cool description"));
+    
 
     this->layout()->setContentsMargins(0,0,0,0);
-    this->layout()->setSpacing(CueListWidget::GAP_WIDTH+1);
-    
+    this->layout()->setSpacing(0);
 
     mHeaderWidget = new CueListHeader(this);
     mCueListWidget = new CueListWidget(mHeaderWidget, this);

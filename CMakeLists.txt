@@ -57,6 +57,8 @@ qt_add_executable(CueEngine
     "include/backend/Backend.h"
     "src/backend/Backend.cpp"
 
+    "include/ui/Utils.h"
+    "src/ui/Utils.cpp"
 
     "src/main.cpp"
 

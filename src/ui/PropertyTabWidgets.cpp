@@ -10,7 +10,7 @@ PropertyPage::PropertyPage(QWidget* parent) : QWidget(parent) {
 
 
 CueGeneralPage::CueGeneralPage(QWidget* parent) : PropertyPage(parent) {
-    auto* label = new QLabel("General stuff idk", this);
+    auto* label = new QLabel("General settings placeholder label", this);
     this->layout()->addWidget(label);
 }
 bool CueGeneralPage::supportsCue(Cue& cue) {

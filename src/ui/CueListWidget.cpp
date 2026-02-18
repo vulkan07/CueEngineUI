@@ -1,10 +1,13 @@
 #include "ui/CueListWidget.h"
+#include "ui/Utils.h"
 #include "backend/Backend.h"
 
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPaintEvent>
+#include <QTime>
 
 #include <algorithm>
 
@@ -33,13 +36,12 @@ int CueListHeader::getHeaderWidth(int index) const {
 }
 
 
-
 CueListWidget::CueListWidget(CueListHeader* const header, QWidget* parent) : QWidget(parent), header(header) {
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     connect(&AnimationClock::getInstance(), &AnimationClock::tick, this, &CueListWidget::animationTick);
 
-    this->setFixedHeight((backend.getLength()+2) * ROW_TOTAL_H); // TODO this should update
+    this->setFixedHeight((backend.getLength()+2) * ROW_TOTAL_H + TOP_OFFSET); // TODO this should update
 }
 
 void CueListWidget::paintEvent(QPaintEvent* event) {
@@ -55,15 +57,21 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
     int xBasis = 0;
     int yBasis;
 
+    static QFont monoFont("monospace");
+
+    Cue* cue = nullptr;
 
     for (int i = 0; i < CueListColumns.size(); i++) {
         
         int width = header->getHeaderWidth(i);
         auto column = CueListColumns[i];
-        yBasis = startRow*ROW_TOTAL_H;
+        yBasis = startRow*ROW_TOTAL_H + TOP_OFFSET;
 
         for (int j = startRow; j < std::min(backend.getLength(), (size_t)endRow); j++) {
             
+            cue = backend.getCue(j);
+            if (!cue) continue; // Just in case
+
             // Background fill
             QRect rect {xBasis, yBasis, width, ROW_HEIGHT}; // the whole cell
             p.fillRect(rect, QBrush(j%2 ? "#1d1d1f" : "#222224")); // TODO un-hardcode bg color
@@ -75,19 +83,25 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
                     p.drawText(paddedRect, column.textAlignment, QString::number(j+1));
                     break;
                 case CueListColumnTypes::NAME:
-                    p.drawText(paddedRect, column.textAlignment, backend.getCue(j)->mName);
+                    p.drawText(paddedRect, column.textAlignment, cue->mName);
                     break;
                 case CueListColumnTypes::DESCRIPTION:
-                    p.drawText(paddedRect, column.textAlignment, backend.getCue(j)->mDescription);
+                    p.drawText(paddedRect, column.textAlignment, cue->mDescription);
                     break;
                 case CueListColumnTypes::PRE_WAIT:
                     break;
                 case CueListColumnTypes::DURATION:
-                    p.fillRect(rect.adjusted(0,0, -width*(j*0.01) ,0), QBrush("#604040c0")); // TODO un-hardcode bg color
+                    if (cue->getType() == CueType::MediaCue) {
+                        p.setFont(monoFont);
+                        p.drawText(paddedRect, column.textAlignment, stringFromDuration(static_cast<MediaCue*>(cue)->mDuration));
+                        //p.fillRect(rect.adjusted(0,0, -width*(j*0.01) ,0), QBrush("#604040c0")); // TODO un-hardcode bg color    
+                    }
                     break;
                 case CueListColumnTypes::POST_WAIT:
+                    p.setFont(monoFont);
                     break;
                 case CueListColumnTypes::NEXT_ACTION:
+                    p.setFont(monoFont);
                     break;
                 default:; // suppress warning for _COUNT_
             }
@@ -99,15 +113,38 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
     // Mouse "cursor"
     int w = 2;
     double whalf = w/2;
-    QRectF rect = {(double)whalf, mCursorPos-whalf , (double)width()-w, (double)ROW_HEIGHT+w};
-    p.setPen(QPen(QColor(200,200,255),w));
+    QRectF rect = {(double)whalf, mCursorPos-whalf+TOP_OFFSET, (double)width()-w, (double)ROW_HEIGHT+w};
+    QColor pen{200,200,255};
+    p.setPen(QPen(pen,w));
     p.setBrush(QColor(110,110,255,30));
     p.drawRect(rect);
+    
+    // Mouse cursor arrow thing
+    QPainterPath path;
+    qreal top = mCursorPos+TOP_OFFSET;
+    QPointF p1{2, top+1};
+    QPointF p2{6, top+ROW_HEIGHT/2};
+    QPointF p3{2, top+ROW_HEIGHT-1};
+    path.moveTo(p1);
+    path.lineTo(p2);
+    path.moveTo(p2);
+    path.lineTo(p3);
+    path.lineTo(p3);
+    path.lineTo(p1);
+    p.setPen(Qt::NoPen);
+    p.fillPath(path, pen);
+
+    /* TODO shadow below header (needs pos of scrollbar)
+    for (int i = 0; i < 8; i++) {
+        p.setPen({0,0,0,255*(255/8)});
+        p.drawLine(0,i,width(),i);
+    }
+    */
 }
 
 
 void CueListWidget::mousePressEvent(QMouseEvent* event) {
-    this->setStandbyIndex( (event->pos().y() - GAP_WIDTH) / ROW_TOTAL_H );
+    this->setStandbyIndex( (event->pos().y() - GAP_WIDTH - TOP_OFFSET) / ROW_TOTAL_H );
 }
 
 //TODO remake this in a less ass way
@@ -124,8 +161,8 @@ void CueListWidget::setStandbyIndex(int index) {
     if (AnimationClock::getInstance().isAnimationsEnabled() == false) {float prevPos = mCursorPos;
         mCursorPos = mTargetCursorPos; 
         this->repaint(
-                QRect(0, mCursorPos - GAP_WIDTH, width(), ROW_TOTAL_H+GAP_WIDTH*2) | 
-                QRect(0, prevPos - GAP_WIDTH, width(), ROW_TOTAL_H+GAP_WIDTH*2)
+                QRect(0, mCursorPos - GAP_WIDTH + TOP_OFFSET, width(), ROW_TOTAL_H+GAP_WIDTH*2) | 
+                QRect(0, prevPos - GAP_WIDTH + TOP_OFFSET, width(), ROW_TOTAL_H+GAP_WIDTH*2)
             );
     }
     else if (!mAnimHandle) {
@@ -140,7 +177,9 @@ void CueListWidget::animationTick(float dt) {
 
     float oldPos = mCursorPos;
     float dist = fabs(mCursorPos-mTargetCursorPos);
-    mCursorPos = lerp(mCursorPos, mTargetCursorPos, decayToLerpConstant(lerpSpeedBoost(60,dist,60), dt));
+    float speed = 48;
+    if (dist > ROW_TOTAL_H*3) speed = 90;
+    mCursorPos = lerp(mCursorPos, mTargetCursorPos, decayToLerpConstant(speed, dt));
     
     if (dist < PIXEL_SNAP_THERSHOLD) {
         mCursorPos = mTargetCursorPos;
@@ -149,8 +188,8 @@ void CueListWidget::animationTick(float dt) {
     }
     
     this->repaint(
-        QRect(0, mCursorPos - GAP_WIDTH, width(), ROW_TOTAL_H+GAP_WIDTH*2) | 
-        QRect(0, oldPos - GAP_WIDTH, width(), ROW_TOTAL_H+GAP_WIDTH*2)
+        QRect(0, mCursorPos - GAP_WIDTH + TOP_OFFSET, width(), ROW_TOTAL_H+GAP_WIDTH*2) | 
+        QRect(0, oldPos - GAP_WIDTH + TOP_OFFSET, width(), ROW_TOTAL_H+GAP_WIDTH*2)
     );
 }
 

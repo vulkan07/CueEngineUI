@@ -32,12 +32,12 @@ struct ColumnData {
 };
 
 static std::array<ColumnData, static_cast<int>(CueListColumnTypes::_COUNT_)> CueListColumns {{
-    {"#", 28, Qt::AlignCenter, ResizeMode::FIXED},
+    {"#", 32, Qt::AlignCenter, ResizeMode::FIXED},
     {"Name", 180},
     {"Description", 300, Qt::AlignVCenter | Qt::AlignLeft, ResizeMode::STRETCHING},
-    {"Pre Wait", 100},
-    {"Duration", 110},
-    {"Post Wait", 100},
+    {"Pre Wait", 85, Qt::AlignCenter},
+    {"Duration", 85, Qt::AlignCenter},
+    {"Post Wait", 85, Qt::AlignCenter},
     {"", 28, Qt::AlignCenter, ResizeMode::FIXED},
 }};
 
@@ -65,6 +65,7 @@ public:
     static const int ROW_HEIGHT = 28;
     static const int CELL_PADDING = 4;
     static const int ROW_TOTAL_H = ROW_HEIGHT+GAP_WIDTH;
+    static const int TOP_OFFSET = GAP_WIDTH+1;
 
     explicit CueListWidget(CueListHeader* const header, QWidget* parent = nullptr);
 

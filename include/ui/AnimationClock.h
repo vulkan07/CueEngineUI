@@ -63,7 +63,7 @@ signals:
 
 // ------------- Animation helpers ------------- //
 
-static constexpr float PIXEL_SNAP_THERSHOLD = 0.3f;
+static constexpr float PIXEL_SNAP_THERSHOLD = 0.2f;
 
 
 static inline float lerpSpeedBoost(float speed, float dist, float boost) {
@@ -71,8 +71,7 @@ static inline float lerpSpeedBoost(float speed, float dist, float boost) {
 }
 
 static inline float decayToLerpConstant(float k, float dt) {
-    auto q = (1.0f + k * dt);
-    return k * dt / q;
+    return k * dt / (1.0f + k * dt);
 }
 
 static inline float lerp(float value, float target, float f) {

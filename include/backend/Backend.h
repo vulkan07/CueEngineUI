@@ -11,6 +11,8 @@ class Backend : public QObject {
 
 private:
     std::vector<std::unique_ptr<Cue>> mCues;
+    
+    std::vector<Cue> v;
 
     Backend() : QObject() {}
 
