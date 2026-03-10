@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QScrollArea>
+#include <QScrollBar>
 
 #include <vector>
 #include <array>
@@ -27,18 +28,19 @@ enum class ResizeMode : int {
 struct ColumnData {
     const char* name;
     int width;
+    int minimumWidth;
     int textAlignment = Qt::AlignVCenter | Qt::AlignLeft;
     ResizeMode ResizeMode;
 };
 
 static std::array<ColumnData, static_cast<int>(CueListColumnTypes::_COUNT_)> CueListColumns {{
-    {"#", 32, Qt::AlignCenter, ResizeMode::FIXED},
-    {"Name", 180},
-    {"Description", 300, Qt::AlignVCenter | Qt::AlignLeft, ResizeMode::STRETCHING},
-    {"Pre Wait", 85, Qt::AlignCenter},
-    {"Duration", 85, Qt::AlignCenter},
-    {"Post Wait", 85, Qt::AlignCenter},
-    {"", 28, Qt::AlignCenter, ResizeMode::FIXED},
+    {"#", 32, 32, Qt::AlignCenter, ResizeMode::FIXED},
+    {"Name", 180, 100},
+    {"Description", 300, 100, Qt::AlignVCenter | Qt::AlignLeft, ResizeMode::STRETCHING},
+    {"Pre Wait", 85, 70, Qt::AlignCenter},
+    {"Duration", 85, 70, Qt::AlignCenter},
+    {"Post Wait", 85, 70, Qt::AlignCenter},
+    {"", 28, 28, Qt::AlignCenter, ResizeMode::FIXED},
 }};
 
 
@@ -46,9 +48,17 @@ class CueListHeader : public QWidget {
     Q_OBJECT
 private:
     std::vector<QWidget*> mWidgets;
+    int mGrabbedIndex = -1;
+    int mGrabOrigin = 0;
 public:
+    static const int GRAB_WIDTH = 12;
     explicit CueListHeader(QWidget* parent = nullptr);
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
     int getHeaderWidth(int index) const;
+signals:
+    void userResized();
 };
 
 class CueListWidget : public QWidget {
@@ -56,10 +66,12 @@ class CueListWidget : public QWidget {
 private:
     float mCursorPos = 0;
     float mTargetCursorPos = 0;
+    float mTargetScrollbarPos = 0;
     AnimationHandle* mAnimHandle = nullptr;
 
     int mStandbyIndex;
     const CueListHeader* const header; // only reference, not owned by this
+    QScrollBar* const vScrollBar; // only reference, this class handles scrolling to the cue when standby index changes 
 public:
     static const int GAP_WIDTH = 2;
     static const int ROW_HEIGHT = 28;
@@ -67,7 +79,7 @@ public:
     static const int ROW_TOTAL_H = ROW_HEIGHT+GAP_WIDTH;
     static const int TOP_OFFSET = GAP_WIDTH+1;
 
-    explicit CueListWidget(CueListHeader* const header, QWidget* parent = nullptr);
+    explicit CueListWidget(CueListHeader* const header, QScrollBar* const scrollBar, QWidget* parent = nullptr);
 
     void onUpAction();
     void onDownAction();
@@ -76,9 +88,14 @@ public:
     void setStandbyIndex(int index);
     int standbyIndex();
 
+    void scrollToStandbyIndex();
+
     void animationTick(float dt);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
+
+signals:
+    void updateScroll();
 };

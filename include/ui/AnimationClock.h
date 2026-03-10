@@ -4,18 +4,22 @@
 #include <QTimer>
 #include <QElapsedTimer>
 
-// AnimationClock returns instances of these to objects who ask ticking for animation
-// It's lifetime represents whether the animation is running (destructor/done() means end of animation)
+// If something uses animation frames, it should have an instance of this class
+// call start() and stop() to indicate the animation clock how many animations are running
 class AnimationHandle {
+private:
+    bool mRunning;
 public:
     AnimationHandle() = default;
     ~AnimationHandle();
-    void done(); // just an alias for destructor
+    void start();
+    void stop();
+    bool isRunning();
 };
 
-// This class stores a global clock that ticks at a set framerate,
-// and calls every object subscribed to its signal, also supplying it with delta time
-// It stops itself if all animations are ended (AnimationHandle objects express animation lifetimes)
+// This class stores a global clock that ticks at a set framerate, to animate the whole application
+// it calls every object that connects to its tick signal, also providing delta time
+// It stops if no animations are running
 class AnimationClock : public QObject {
     Q_OBJECT
     friend class AnimationHandle;
@@ -30,6 +34,7 @@ private:
     
     AnimationClock();
 
+    void incrementRunningCount();
     void decrementRunningCount();
 
 public:
@@ -37,6 +42,7 @@ public:
     static const int DEFAULT_FRAME_RATE = 60;
     static const int MAX_FRAME_RATE = 144;
 
+    // Singleton //
     static AnimationClock& getInstance() {
         static AnimationClock animClock;
         return animClock;

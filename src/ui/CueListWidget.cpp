@@ -26,9 +26,73 @@ CueListHeader::CueListHeader(QWidget* parent) : QWidget(parent) {
         }
         widget->setAutoFillBackground(true);
         widget->setAlignment(Qt::AlignCenter);
+        widget->setMouseTracking(true);
         mWidgets.push_back(widget);
         layout->addWidget(widget);
     }
+
+    this->setMouseTracking(true);
+}
+
+void CueListHeader::mousePressEvent(QMouseEvent* event) {
+    int mouseX = event->pos().x();
+
+    int x = 0;
+    for (int i = 0; i < CueListColumns.size(); i++) {
+        if ((mouseX > x-CueListHeader::GRAB_WIDTH) && (mouseX < x+CueListHeader::GRAB_WIDTH)) {
+            mGrabbedIndex = i;
+            mGrabOrigin = x;
+            break;
+        }
+        x += mWidgets[i]->width() + CueListWidget::GAP_WIDTH;
+    }
+}
+
+void CueListHeader::mouseReleaseEvent(QMouseEvent* event) {
+    mGrabbedIndex = -1;
+}
+
+void CueListHeader::mouseMoveEvent(QMouseEvent* event) {
+    if (mGrabbedIndex < 1) 
+        return;
+
+    if (CueListColumns[mGrabbedIndex-1].ResizeMode == ResizeMode::FIXED)
+        return;
+
+    int mouseX = event->pos().x();
+
+    int dx = mouseX - mGrabOrigin;
+    QWidget* w1 = mWidgets[mGrabbedIndex-1];
+    QWidget* w2 = mWidgets[mGrabbedIndex];
+
+    int size1 = w1->width()+dx;
+    int size2 = w2->width()-dx;
+    int min1 = CueListColumns[mGrabbedIndex-1].minimumWidth;
+    int min2 = CueListColumns[mGrabbedIndex].minimumWidth;
+
+    
+    // enforce minimum widths
+    if (size1 < min1) {
+        int d = size1-min1;
+        dx -= d;
+        size2 += d;
+        size1 = min1;
+    }
+    if (size2 < min2) {
+        int d = size2-min2;
+        dx -= d;
+        size1 += d;
+        size2 = min2;
+    }
+
+
+    if (CueListColumns[mGrabbedIndex-1].ResizeMode != ResizeMode::STRETCHING)
+        w1->setFixedWidth(size1);
+    if (CueListColumns[mGrabbedIndex].ResizeMode != ResizeMode::STRETCHING)
+        w2->setFixedWidth(size2);
+
+    mGrabOrigin += dx;
+    emit userResized(); // send update to cue list table
 }
 
 int CueListHeader::getHeaderWidth(int index) const {
@@ -36,12 +100,14 @@ int CueListHeader::getHeaderWidth(int index) const {
 }
 
 
-CueListWidget::CueListWidget(CueListHeader* const header, QWidget* parent) : QWidget(parent), header(header) {
+CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scrollBar, QWidget* parent) 
+    : QWidget(parent), header(header), vScrollBar(scrollBar), mAnimHandle(new AnimationHandle) {
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     connect(&AnimationClock::getInstance(), &AnimationClock::tick, this, &CueListWidget::animationTick);
+    connect(this->header, &CueListHeader::userResized, this, [=]{this->update();}); // Update widths if user resizes headers
 
-    this->setFixedHeight((backend.getLength()+2) * ROW_TOTAL_H + TOP_OFFSET); // TODO this should update
+    this->setFixedHeight((backend.getLength()+2) * ROW_TOTAL_H + TOP_OFFSET); // TODO this should update if num of cues changes
 }
 
 void CueListWidget::paintEvent(QPaintEvent* event) {
@@ -158,22 +224,67 @@ void CueListWidget::setStandbyIndex(int index) {
     }
 
     mTargetCursorPos = mStandbyIndex*ROW_TOTAL_H;
-    if (AnimationClock::getInstance().isAnimationsEnabled() == false) {float prevPos = mCursorPos;
+    if (AnimationClock::getInstance().isAnimationsEnabled() == false) {
+        float prevPos = mCursorPos;
         mCursorPos = mTargetCursorPos; 
         this->repaint(
                 QRect(0, mCursorPos - GAP_WIDTH + TOP_OFFSET, width(), ROW_TOTAL_H+GAP_WIDTH*2) | 
                 QRect(0, prevPos - GAP_WIDTH + TOP_OFFSET, width(), ROW_TOTAL_H+GAP_WIDTH*2)
             );
     }
-    else if (!mAnimHandle) {
-        mAnimHandle = AnimationClock::getInstance().resumeAnimation();
+    else {
+        mAnimHandle->start();
     }
+    this->scrollToStandbyIndex();
 }
 
 int CueListWidget::standbyIndex() { return mStandbyIndex; }
 
+
+void CueListWidget::scrollToStandbyIndex() {
+    static const int PADDING = 2*ROW_TOTAL_H;
+
+    int i = this->standbyIndex();
+    int cueY = i*ROW_TOTAL_H;
+    int barPos = vScrollBar->value();
+    int h = this->visibleRegion().boundingRect().height();
+
+    int target = -1;
+    if (cueY < barPos+PADDING) { // cue is above viewport
+        qDebug() << "above";
+        target = cueY-PADDING;
+        if (target<0) target = 0;
+    } else if (cueY+ROW_HEIGHT > barPos + h - PADDING) { // cue below viewport -> adjust to bottom
+        qDebug() << "below";
+        target = cueY+ROW_HEIGHT+PADDING-h;
+    }
+
+    if (target == -1) return; // no position update
+
+    if (AnimationClock::getInstance().isAnimationsEnabled() == false) {
+        vScrollBar->setValue(target);
+    } else {
+        mAnimHandle->start();
+        mTargetScrollbarPos = target;
+    }
+}
+
 void CueListWidget::animationTick(float dt) {
-    if (!mAnimHandle) return;
+    if (!mAnimHandle->isRunning()) return;
+
+    int barPos = vScrollBar->value();
+
+    if ( mTargetScrollbarPos != -1) { // TODO this is stupid
+        if(fabs(barPos-mTargetScrollbarPos) > PIXEL_SNAP_THERSHOLD) {
+            vScrollBar->setValue(
+                lerp(barPos, mTargetScrollbarPos, decayToLerpConstant(44, dt))
+            );
+        }
+        else {
+            mTargetScrollbarPos = -1;
+        }
+        
+    } 
 
     float oldPos = mCursorPos;
     float dist = fabs(mCursorPos-mTargetCursorPos);
@@ -183,8 +294,7 @@ void CueListWidget::animationTick(float dt) {
     
     if (dist < PIXEL_SNAP_THERSHOLD) {
         mCursorPos = mTargetCursorPos;
-        mAnimHandle->done();
-        mAnimHandle = nullptr; // TODO THIS IS ASS!
+        mAnimHandle->stop();
     }
     
     this->repaint(

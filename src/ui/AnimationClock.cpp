@@ -10,6 +10,7 @@ AnimationClock::AnimationClock() : QObject(), mTimer(), mElapsedTimer() {
     auto fps = screen->refreshRate();
     this->setFrameRate(fps);
 
+    // Update fps when screen refresh rate changes
     connect(screen, &QScreen::refreshRateChanged, this, [=](qreal fps){
         this->setFrameRate(fps);
     });
@@ -47,26 +48,49 @@ bool AnimationClock::isAnimationsEnabled() const {
 }
 
 
-void AnimationClock::decrementRunningCount() {
-    if (--mRunningAnimCount <= 0) {
-        mTimer.stop();
+void AnimationClock::incrementRunningCount() {
+    if (!mAnimationsEnabled) return;
+
+    mRunningAnimCount++;
+    if (mRunningAnimCount == 1) {
+        mElapsedTimer.restart();
+        mTimer.start();
     }
+}
+void AnimationClock::decrementRunningCount() {
+    if (mRunningAnimCount > 0)
+        mRunningAnimCount--;
+
+    if (mRunningAnimCount == 0)
+        mTimer.stop();
 }
 
 AnimationHandle* const AnimationClock::resumeAnimation() {
     if (!mAnimationsEnabled) return nullptr;
 
-    if (mRunningAnimCount++ <= 0) {
-        mElapsedTimer.restart();
-        mTimer.start();
-    }
+    auto* handle = new AnimationHandle;
+    handle->start(); // increments running count
+
     return new AnimationHandle;
 }
 
-void AnimationHandle::done() {
-    delete this;
+void AnimationHandle::start() {
+    if (!mRunning) {
+        AnimationClock::getInstance().incrementRunningCount();
+        mRunning = true;
+    }
 }
-
+void AnimationHandle::stop() {
+    if (mRunning) {
+        AnimationClock::getInstance().decrementRunningCount();
+        mRunning = false;
+    }
+}
 AnimationHandle::~AnimationHandle() {
-    AnimationClock::getInstance().decrementRunningCount();
+    if (mRunning) {
+        AnimationClock::getInstance().decrementRunningCount();
+    }
 }
+bool AnimationHandle::isRunning() {
+    return mRunning;
+}    

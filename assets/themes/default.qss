@@ -162,7 +162,7 @@ QMenuBar {
 }
 QMenuBar::item {
     color: $text2;
-    padding: 4px 6px;
+    padding: 1px 6px;
     margin-right: 3px;
 
     border-radius:2px;
