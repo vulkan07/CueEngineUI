@@ -96,8 +96,8 @@ SettingsInterfacePage::SettingsInterfacePage(QWidget* parent) : QWidget(parent) 
     mDoAnimationsCheckBox = new QCheckBox(this);
     mAnimFrameRateSpinBox = new QSpinBox(this);
 
-    mAnimFrameRateSpinBox->setMinimum(20);
-    mAnimFrameRateSpinBox->setMaximum(144);
+    mAnimFrameRateSpinBox->setMinimum(AnimationClock::MIN_FRAME_RATE);
+    mAnimFrameRateSpinBox->setMaximum(AnimationClock::MAX_FRAME_RATE);
     
     QSettings s;
     s.beginGroup("Interface");

@@ -8,7 +8,7 @@
 // call start() and stop() to indicate the animation clock how many animations are running
 class AnimationHandle {
 private:
-    bool mRunning;
+    bool mRunning = false;
 public:
     AnimationHandle() = default;
     ~AnimationHandle();
@@ -38,9 +38,9 @@ private:
     void decrementRunningCount();
 
 public:
-    static const int MIN_FRAME_RATE = 20;
-    static const int DEFAULT_FRAME_RATE = 60;
-    static const int MAX_FRAME_RATE = 144;
+    static constexpr int MIN_FRAME_RATE = 20;
+    static constexpr int DEFAULT_FRAME_RATE = 60;
+    static constexpr int MAX_FRAME_RATE = 200;
 
     // Singleton //
     static AnimationClock& getInstance() {

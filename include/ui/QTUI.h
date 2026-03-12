@@ -101,9 +101,9 @@ public:
     void onAboutCueEngineAction();
     void onAboutQtAction();
 
-    static const int RIGHT_PANEL_WIDTH = 250;
-    static const int TOP_PANEL_HEIGHT = 225;
-    static const int BOTTOM_PANEL_HEIGHT = 300;
+    static constexpr int RIGHT_PANEL_WIDTH = 250;
+    static constexpr int TOP_PANEL_HEIGHT = 225;
+    static constexpr int BOTTOM_PANEL_HEIGHT = 300;
 };
 
 

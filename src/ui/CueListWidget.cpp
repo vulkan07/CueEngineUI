@@ -104,18 +104,28 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
     : QWidget(parent), header(header), vScrollBar(scrollBar), mAnimHandle(new AnimationHandle) {
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+    // Optimizations for high FPS rendering
+    // Skip clearing the widget before repaints (in theory)
+    this->setAttribute(Qt::WA_OpaquePaintEvent); 
+    this->setAttribute(Qt::WA_StaticContents); 
+    this->setAutoFillBackground(false);
+
     connect(&AnimationClock::getInstance(), &AnimationClock::tick, this, &CueListWidget::animationTick);
     connect(this->header, &CueListHeader::userResized, this, [=]{this->update();}); // Update widths if user resizes headers
 
-    this->setFixedHeight((backend.getLength()+2) * ROW_TOTAL_H + TOP_OFFSET); // TODO this should update if num of cues changes
+    // TODO implement an update callback function when cues change in backend  -->
+    this->setFixedHeight((backend.getLength()+2) * ROW_TOTAL_H + TOP_OFFSET); // this should update if num of cues changes
 }
 
+// NOTE: performance could be (in theory) significantly increased further by using QStaticText instead of QPainter::drawText()
+// but that requires caching every text entry and updating them when any cue property or the cue list changes
 void CueListWidget::paintEvent(QPaintEvent* event) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
     p.setClipRegion(event->region());
 
-    // Don't render rows that are outside viewport
+    // Don't render rows that are outside viewport (full repaint) 
+    // or dirty region (partial repaint when cursor is moved)
     int startRow = event->region().boundingRect().top() / ROW_TOTAL_H;
     int endRow = event->region().boundingRect().bottom() / ROW_TOTAL_H +1;
     
@@ -200,12 +210,17 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
     p.setPen(Qt::NoPen);
     p.fillPath(path, pen);
 
-    /* TODO shadow below header (needs pos of scrollbar)
-    for (int i = 0; i < 8; i++) {
-        p.setPen({0,0,0,255*(255/8)});
-        p.drawLine(0,i,width(),i);
+    // Tiny 'shadow' below header
+    // only shows up when it cuts throught text, improve readability
+    int barPos = vScrollBar->value();
+    constexpr int size = 5;
+    if ((barPos+2) % ROW_TOTAL_H > 3) {
+        for (int i = 0; i < size; i++) {
+            p.setPen({22,22,22,(190/size)*(size-i)});
+            p.drawLine(0, i+barPos, width(), i+barPos);
+        }
     }
-    */
+    
 }
 
 
@@ -219,7 +234,6 @@ void CueListWidget::setStandbyIndex(int index) {
     mStandbyIndex = index;
     if (mStandbyIndex >= backend.getLength() || mStandbyIndex < 0) {
         mStandbyIndex = oldIndex;
-
         return;
     }
 
@@ -233,16 +247,19 @@ void CueListWidget::setStandbyIndex(int index) {
             );
     }
     else {
+        mAnimMask |= ANIM_CURSOR;
         mAnimHandle->start();
     }
     this->scrollToStandbyIndex();
 }
 
-int CueListWidget::standbyIndex() { return mStandbyIndex; }
+int CueListWidget::standbyIndex() {
+    return mStandbyIndex;
+}
 
 
 void CueListWidget::scrollToStandbyIndex() {
-    static const int PADDING = 2*ROW_TOTAL_H;
+    constexpr int PADDING = 2*ROW_TOTAL_H;
 
     int i = this->standbyIndex();
     int cueY = i*ROW_TOTAL_H;
@@ -251,11 +268,9 @@ void CueListWidget::scrollToStandbyIndex() {
 
     int target = -1;
     if (cueY < barPos+PADDING) { // cue is above viewport
-        qDebug() << "above";
         target = cueY-PADDING;
         if (target<0) target = 0;
     } else if (cueY+ROW_HEIGHT > barPos + h - PADDING) { // cue below viewport -> adjust to bottom
-        qDebug() << "below";
         target = cueY+ROW_HEIGHT+PADDING-h;
     }
 
@@ -264,8 +279,9 @@ void CueListWidget::scrollToStandbyIndex() {
     if (AnimationClock::getInstance().isAnimationsEnabled() == false) {
         vScrollBar->setValue(target);
     } else {
-        mAnimHandle->start();
+        mAnimMask |= ANIM_SCROLL;
         mTargetScrollbarPos = target;
+        mAnimHandle->start();
     }
 }
 
@@ -273,34 +289,47 @@ void CueListWidget::animationTick(float dt) {
     if (!mAnimHandle->isRunning()) return;
 
     int barPos = vScrollBar->value();
+    // Qt uses an int for the scrollbar, but animation needs float for accurate and smooth motion
+    // This ensures that the float value updates along together with Qt when the user scrolls the scrollbar
+    if (fabs(barPos - mScrollbarPos) >= 1)
+        mScrollbarPos = barPos;
 
-    if ( mTargetScrollbarPos != -1) { // TODO this is stupid
-        if(fabs(barPos-mTargetScrollbarPos) > PIXEL_SNAP_THERSHOLD) {
-            vScrollBar->setValue(
-                lerp(barPos, mTargetScrollbarPos, decayToLerpConstant(44, dt))
-            );
+    if (mAnimMask & ANIM_SCROLL) {
+        int dist = fabs(barPos-mTargetScrollbarPos);
+
+        if(dist <= 1) {
+            mAnimMask &= ~(ANIM_SCROLL); // end scroll bar animation
+        } else {
+            int speed = dist < 6 ? 30 : 44;
+            mScrollbarPos = lerp(mScrollbarPos, mTargetScrollbarPos, decayToLerpConstant(speed, dt));
+            vScrollBar->setValue((int)mScrollbarPos);
         }
-        else {
-            mTargetScrollbarPos = -1;
-        }
-        
     } 
 
-    float oldPos = mCursorPos;
-    float dist = fabs(mCursorPos-mTargetCursorPos);
-    float speed = 48;
-    if (dist > ROW_TOTAL_H*3) speed = 90;
-    mCursorPos = lerp(mCursorPos, mTargetCursorPos, decayToLerpConstant(speed, dt));
-    
-    if (dist < PIXEL_SNAP_THERSHOLD) {
-        mCursorPos = mTargetCursorPos;
-        mAnimHandle->stop();
+    if (mAnimMask & ANIM_CURSOR) {
+        float oldPos = mCursorPos;
+        float dist = fabs(mCursorPos-mTargetCursorPos);
+        float speed = 48;
+        if (dist > ROW_TOTAL_H*3) speed = 90;
+        mCursorPos = lerp(mCursorPos, mTargetCursorPos, decayToLerpConstant(speed, dt));
+        
+        if (dist < PIXEL_SNAP_THERSHOLD) {
+            mCursorPos = mTargetCursorPos;
+            mAnimMask &= ~(ANIM_CURSOR); // end cursor animation
+        }
+        
+        // Repaint the area around cursor only
+        // Note: scroll animation triggers a total repaint so this is won't be called redundantly
+        if (!(mAnimMask & ANIM_SCROLL)) {
+            this->repaint(
+                QRect(0, mCursorPos - GAP_WIDTH + TOP_OFFSET, width(), ROW_TOTAL_H+GAP_WIDTH*2) | 
+                QRect(0, oldPos - GAP_WIDTH + TOP_OFFSET, width(), ROW_TOTAL_H+GAP_WIDTH*2)
+            );
+        }
     }
-    
-    this->repaint(
-        QRect(0, mCursorPos - GAP_WIDTH + TOP_OFFSET, width(), ROW_TOTAL_H+GAP_WIDTH*2) | 
-        QRect(0, oldPos - GAP_WIDTH + TOP_OFFSET, width(), ROW_TOTAL_H+GAP_WIDTH*2)
-    );
+
+    if (!mAnimMask)
+        mAnimHandle->stop();
 }
 
 void CueListWidget::onUpAction() {
@@ -312,5 +341,6 @@ void CueListWidget::onDownAction() {
 }// azt nem tudom hogy a templomban az orgona az rendelkezik e python compilerrrel, mert klaviatura van rajta tehat gepelni lehet vele - Taki 2025
 
 void CueListWidget::onPlayAction() {
+    setStandbyIndex(standbyIndex()+1);
     qDebug() << "PLAY";
 }

@@ -51,7 +51,7 @@ private:
     int mGrabbedIndex = -1;
     int mGrabOrigin = 0;
 public:
-    static const int GRAB_WIDTH = 12;
+    static constexpr int GRAB_WIDTH = 12;
     explicit CueListHeader(QWidget* parent = nullptr);
     void mousePressEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
@@ -66,18 +66,25 @@ class CueListWidget : public QWidget {
 private:
     float mCursorPos = 0;
     float mTargetCursorPos = 0;
+    float mScrollbarPos = 0;
     float mTargetScrollbarPos = 0;
-    AnimationHandle* mAnimHandle = nullptr;
 
-    int mStandbyIndex;
+    AnimationHandle* mAnimHandle = nullptr;
+    uint8_t mAnimMask = 0;
+    static constexpr uint8_t ANIM_CURSOR = (1<<0);
+    static constexpr uint8_t ANIM_SCROLL = (1<<1);
+
+    int mStandbyIndex = 0;
+
     const CueListHeader* const header; // only reference, not owned by this
     QScrollBar* const vScrollBar; // only reference, this class handles scrolling to the cue when standby index changes 
+
 public:
-    static const int GAP_WIDTH = 2;
-    static const int ROW_HEIGHT = 28;
-    static const int CELL_PADDING = 4;
-    static const int ROW_TOTAL_H = ROW_HEIGHT+GAP_WIDTH;
-    static const int TOP_OFFSET = GAP_WIDTH+1;
+    static constexpr int GAP_WIDTH = 2;
+    static constexpr int ROW_HEIGHT = 28;
+    static constexpr int CELL_PADDING = 4;
+    static constexpr int ROW_TOTAL_H = ROW_HEIGHT+GAP_WIDTH;
+    static constexpr int TOP_OFFSET = GAP_WIDTH+1;
 
     explicit CueListWidget(CueListHeader* const header, QScrollBar* const scrollBar, QWidget* parent = nullptr);
 
