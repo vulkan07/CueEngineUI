@@ -20,9 +20,9 @@ enum class CueListColumnTypes : int {
 };
 
 enum class ResizeMode : int {
-    INTERACTIVE,
+    INTERACTIVE, // can be resized by user
     FIXED,
-    STRETCHING,
+    STRETCHING, // fills the remaining space
 };
 
 struct ColumnData {
@@ -75,9 +75,13 @@ private:
     static constexpr uint8_t ANIM_SCROLL = (1<<1);
 
     int mStandbyIndex = 0;
+    std::vector<bool> mSelectedCues = {};
 
     const CueListHeader* const header; // only reference, not owned by this
     QScrollBar* const vScrollBar; // only reference, this class handles scrolling to the cue when standby index changes 
+
+    QAction* createKeyboardShortcut(const char* name, QKeySequence shortcut, void (CueListWidget::*callback)());
+    QAction* mSelectAtCursorAction;
 
 public:
     static constexpr int GAP_WIDTH = 2;
@@ -98,6 +102,11 @@ public:
     void scrollToStandbyIndex();
 
     void animationTick(float dt);
+
+    void repaintCue(int index);
+
+public slots:
+    void onSelectAtCurrentAction();
 
 protected:
     void paintEvent(QPaintEvent* event) override;

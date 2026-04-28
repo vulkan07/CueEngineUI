@@ -1,5 +1,6 @@
 #include "ui/CueListWidget.h"
 #include "ui/Utils.h"
+#include "ui/QTUI.h"
 #include "backend/Backend.h"
 
 #include <QHBoxLayout>
@@ -46,6 +47,8 @@ void CueListHeader::mousePressEvent(QMouseEvent* event) {
         }
         x += mWidgets[i]->width() + CueListWidget::GAP_WIDTH;
     }
+    QGuiApplication::setOverrideCursor(Qt::SizeHorCursor); // TODO 
+    QGuiApplication::restoreOverrideCursor();
 }
 
 void CueListHeader::mouseReleaseEvent(QMouseEvent* event) {
@@ -99,10 +102,23 @@ int CueListHeader::getHeaderWidth(int index) const {
     return mWidgets[index]->width();
 }
 
+QAction* CueListWidget::createKeyboardShortcut(const char* name, QKeySequence shortcut, void (CueListWidget::*callback)()) {
+    QAction* a = new QAction(this);
+    a->setShortcut(shortcut);
+    a->setShortcutContext(Qt::WidgetShortcut);
+    connect(a, &QAction::triggered, this, callback);
+    this->addAction(a);
+    ShortcutManager::registerAction(name, a);
+    return a;
+}
 
 CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scrollBar, QWidget* parent) 
     : QWidget(parent), header(header), vScrollBar(scrollBar), mAnimHandle(new AnimationHandle) {
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    this->setFocusPolicy(Qt::StrongFocus);
+
+    // Keyboard shortcuts specific to this widget
+    mSelectAtCursorAction = createKeyboardShortcut("Select current cue", QKeySequence("Left"), &CueListWidget::onSelectAtCurrentAction);
 
     // Optimizations for high FPS rendering
     // Skip clearing the widget before repaints (in theory)
@@ -113,8 +129,10 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
     connect(&AnimationClock::getInstance(), &AnimationClock::tick, this, &CueListWidget::animationTick);
     connect(this->header, &CueListHeader::userResized, this, [=]{this->update();}); // Update widths if user resizes headers
 
-    // TODO implement an update callback function when cues change in backend  -->
-    this->setFixedHeight((backend.getLength()+2) * ROW_TOTAL_H + TOP_OFFSET); // this should update if num of cues changes
+    //// TODO implement an update callback function when cues change in backend  -->
+    this->setFixedHeight((backend.getLength()+2) * ROW_TOTAL_H + TOP_OFFSET); 
+    this->mSelectedCues.resize(backend.getLength(), false);
+    ////
 }
 
 // NOTE: performance could be (in theory) significantly increased further by using QStaticText instead of QPainter::drawText()
@@ -181,12 +199,14 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
                     break;
                 default:; // suppress warning for _COUNT_
             }
+            if (mSelectedCues[j])
+                p.fillRect(rect, QBrush(QColor(255,0,255,120))); // TODO un-hardcode color
             yBasis += ROW_TOTAL_H;
         }
         xBasis += width + GAP_WIDTH;
     }
 
-    // Mouse "cursor"
+    // "Cursor" at standby index
     int w = 2;
     double whalf = w/2;
     QRectF rect = {(double)whalf, mCursorPos-whalf+TOP_OFFSET, (double)width()-w, (double)ROW_HEIGHT+w};
@@ -259,7 +279,7 @@ int CueListWidget::standbyIndex() {
 
 
 void CueListWidget::scrollToStandbyIndex() {
-    constexpr int PADDING = 2*ROW_TOTAL_H;
+    constexpr int PADDING = 1*ROW_TOTAL_H;
 
     int i = this->standbyIndex();
     int cueY = i*ROW_TOTAL_H;
@@ -271,7 +291,7 @@ void CueListWidget::scrollToStandbyIndex() {
         target = cueY-PADDING;
         if (target<0) target = 0;
     } else if (cueY+ROW_HEIGHT > barPos + h - PADDING) { // cue below viewport -> adjust to bottom
-        target = cueY+ROW_HEIGHT+PADDING-h;
+        target = cueY+ROW_HEIGHT+PADDING-h+6; // Adjust last visible cues bottom (not idea why 6px)
     }
 
     if (target == -1) return; // no position update
@@ -342,5 +362,14 @@ void CueListWidget::onDownAction() {
 
 void CueListWidget::onPlayAction() {
     setStandbyIndex(standbyIndex()+1);
-    qDebug() << "PLAY";
+}
+
+void CueListWidget::onSelectAtCurrentAction() {
+    mSelectedCues[mStandbyIndex] = !mSelectedCues[mStandbyIndex];
+    this->repaintCue(mStandbyIndex);
+}
+
+void CueListWidget::repaintCue(int index) {
+    if (index < 0 || index >= backend.getLength()) return;
+    this->repaint(QRect(0, index*ROW_TOTAL_H + TOP_OFFSET, width(), ROW_TOTAL_H));
 }
