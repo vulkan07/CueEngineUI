@@ -164,26 +164,6 @@ CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
     mScrollWidget->setWidget(mCueListWidget);
 
 
-    mUpAction = new QAction(this);
-    mDownAction = new QAction(this);
-    mPlayAction = new QAction(this);
-
-    mUpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    mDownAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    mPlayAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-
-    mUpAction->setShortcut(QKeySequence("Up"));
-    mDownAction->setShortcut(QKeySequence("Down"));
-    mPlayAction->setShortcuts({QKeySequence("Space"),QKeySequence("Return")});
-
-    connect(mUpAction, &QAction::triggered, mCueListWidget, &CueListWidget::onUpAction);
-    connect(mDownAction, &QAction::triggered, mCueListWidget, &CueListWidget::onDownAction);
-    connect(mPlayAction, &QAction::triggered, mCueListWidget, &CueListWidget::onPlayAction);
-
-    this->addActions({mUpAction,mDownAction,mPlayAction});
-
-    ShortcutManager::registerAction("Play Cue", mPlayAction);
-
     this->layout()->addWidget(mHeaderWidget);
     this->layout()->addWidget(mScrollWidget);
 

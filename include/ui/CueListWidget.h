@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <array>
+#include <functional>
 
 #include "ui/AnimationClock.h"
 
@@ -80,8 +81,31 @@ private:
     const CueListHeader* const header; // only reference, not owned by this
     QScrollBar* const vScrollBar; // only reference, this class handles scrolling to the cue when standby index changes 
 
-    QAction* createKeyboardShortcut(const char* name, QKeySequence shortcut, void (CueListWidget::*callback)());
+    QAction* createKeyboardShortcut(const char* name, QKeySequence shortcut, std::function<void()> callback);
+    
+    // Control
+    QAction* mPlayAction;
+
+    // Navigation
+    QAction* mHomeAction;
+    QAction* mEndAction;
+    QAction* mUpAction;
+    QAction* mDownAction;
+
+    // Selection
     QAction* mSelectAtCursorAction;
+    QAction* mSelectCursorUpAction;
+    QAction* mSelectCursorDownAction;
+    QAction* mSelectCursorUntilHomeAction;
+    QAction* mSelectCursorUntilEndAction;
+    QAction* mSelectAllAction;
+    QAction* mDeselectAllAction;
+
+    struct SelectionRange {
+        int start;
+        int end;
+    };
+    std::vector<SelectionRange> mSelectionRanges = {};
 
 public:
     static constexpr int GAP_WIDTH = 2;
@@ -92,10 +116,6 @@ public:
 
     explicit CueListWidget(CueListHeader* const header, QScrollBar* const scrollBar, QWidget* parent = nullptr);
 
-    void onUpAction();
-    void onDownAction();
-    void onPlayAction();
-
     void setStandbyIndex(int index);
     int standbyIndex();
 
@@ -105,8 +125,14 @@ public:
 
     void repaintCue(int index);
 
+    void updateSelectionRanges();
+
+    void selectAllCues(bool select);
+    void selectCuesInRange(int start, int end, bool select); // inclusive
+    void selectCueAtCursor(bool select);
+
 public slots:
-    void onSelectAtCurrentAction();
+    ;
 
 protected:
     void paintEvent(QPaintEvent* event) override;

@@ -102,10 +102,10 @@ int CueListHeader::getHeaderWidth(int index) const {
     return mWidgets[index]->width();
 }
 
-QAction* CueListWidget::createKeyboardShortcut(const char* name, QKeySequence shortcut, void (CueListWidget::*callback)()) {
+QAction* CueListWidget::createKeyboardShortcut(const char* name, QKeySequence shortcut, std::function<void()> callback) {
     QAction* a = new QAction(this);
     a->setShortcut(shortcut);
-    a->setShortcutContext(Qt::WidgetShortcut);
+    a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(a, &QAction::triggered, this, callback);
     this->addAction(a);
     ShortcutManager::registerAction(name, a);
@@ -118,7 +118,50 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
     this->setFocusPolicy(Qt::StrongFocus);
 
     // Keyboard shortcuts specific to this widget
-    mSelectAtCursorAction = createKeyboardShortcut("Select current cue", QKeySequence("Left"), &CueListWidget::onSelectAtCurrentAction);
+    mHomeAction = createKeyboardShortcut("Move to top", Qt::Key_Home, [=]{
+        this->setStandbyIndex(0);
+    });
+    mEndAction = createKeyboardShortcut("Move to top", Qt::Key_Home, [=]{
+        this->setStandbyIndex(0);
+    });
+    mUpAction = createKeyboardShortcut("Move up", Qt::Key_Up, [=]{
+        this->setStandbyIndex(this->standbyIndex()-1);
+    });
+    mDownAction = createKeyboardShortcut("Move down", Qt::Key_Down, [=]{
+        this->setStandbyIndex(this->standbyIndex()+1);
+    });
+    mPlayAction = createKeyboardShortcut("Play cue", Qt::Key_Space, [=]{
+        // TODO cue action here
+        this->setStandbyIndex(this->standbyIndex()+1);
+    });
+    mSelectAtCursorAction = createKeyboardShortcut("Select current cue", Qt::Key_Left, [=]{
+        this->selectCueAtCursor(!mSelectedCues[this->standbyIndex()]);
+    });
+    mSelectAllAction = createKeyboardShortcut("Select all cues", Qt::Key_Control | Qt::Key_A, [=]{
+        this->selectAllCues(true);
+    });
+    mDeselectAllAction = createKeyboardShortcut("Deselect all cues", Qt::Key_Escape, [=]{
+        this->selectAllCues(false);
+    });
+    mSelectCursorUpAction = createKeyboardShortcut("Select up", Qt::Key_Shift | Qt::Key_Up, [=]{
+        int index = this->standbyIndex();
+        this->selectCuesInRange(index-1, index, true);
+        this->setStandbyIndex(index-1);
+    });
+    mSelectCursorDownAction = createKeyboardShortcut("Select down", Qt::Key_Shift | Qt::Key_Down, [=]{
+        int index = this->standbyIndex();
+        this->selectCuesInRange(index, index+1, true);
+        this->setStandbyIndex(index+1);
+    });
+    mSelectCursorUntilHomeAction = createKeyboardShortcut("Select until home", Qt::Key_Shift | Qt::Key_Home, [=]{
+        int index = this->standbyIndex();
+        this->selectCuesInRange(0, index, true);
+        this->setStandbyIndex(0);
+    });
+    mSelectCursorUntilEndAction = createKeyboardShortcut("Select until end", Qt::Key_Shift | Qt::Key_End, [=]{
+        this->selectCuesInRange(this->standbyIndex(), backend.getLength()-1, true);
+        this->setStandbyIndex(backend.getLength()-1);
+    });
 
     // Optimizations for high FPS rendering
     // Skip clearing the widget before repaints (in theory)
@@ -170,6 +213,9 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
             QRect rect {xBasis, yBasis, width, ROW_HEIGHT}; // the whole cell
             p.fillRect(rect, QBrush(j%2 ? "#1d1d1f" : "#222224")); // TODO un-hardcode bg color
 
+            //if (mSelectedCues[j])
+            //    p.fillRect(rect, QBrush(QColor(100,150,200,130))); // TODO un-hardcode color
+
             // Text
             QRect paddedRect = rect.marginsRemoved(QMargins()+CELL_PADDING); // TODO un-hardcode text padding
             switch (static_cast<CueListColumnTypes>(i)) {
@@ -199,8 +245,6 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
                     break;
                 default:; // suppress warning for _COUNT_
             }
-            if (mSelectedCues[j])
-                p.fillRect(rect, QBrush(QColor(255,0,255,120))); // TODO un-hardcode color
             yBasis += ROW_TOTAL_H;
         }
         xBasis += width + GAP_WIDTH;
@@ -209,11 +253,26 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
     // "Cursor" at standby index
     int w = 2;
     double whalf = w/2;
-    QRectF rect = {(double)whalf, mCursorPos-whalf+TOP_OFFSET, (double)width()-w, (double)ROW_HEIGHT+w};
-    QColor pen{200,200,255};
+    QRectF rect = {whalf, mCursorPos-whalf+TOP_OFFSET, (double)width()-w, (double)ROW_HEIGHT+whalf};
+    QColor pen{180,180,255};
     p.setPen(QPen(pen,w));
-    p.setBrush(QColor(110,110,255,30));
+    p.setBrush(QColor(100,100,255,30));
     p.drawRect(rect);
+
+    // Selection ranges 
+    w = 1;
+    p.setRenderHint(QPainter::Antialiasing, false); // sharper edges for selection rects
+    p.setPen(QPen(QColor({220,220,250}),w));
+    p.setBrush(QColor(250,250,255,25));
+    for (auto range : mSelectionRanges) {
+        p.drawRect(
+                1,
+                range.start*ROW_TOTAL_H+TOP_OFFSET-w,
+                width()-(w*2),
+                (range.end-range.start+1)*ROW_TOTAL_H-(w*2)
+        );
+    }
+    p.setRenderHint(QPainter::Antialiasing, true);
     
     // Mouse cursor arrow thing
     QPainterPath path;
@@ -352,24 +411,57 @@ void CueListWidget::animationTick(float dt) {
         mAnimHandle->stop();
 }
 
-void CueListWidget::onUpAction() {
-    setStandbyIndex(standbyIndex()-1);
-}
-
-void CueListWidget::onDownAction() {
-    setStandbyIndex(standbyIndex()+1);
-}// azt nem tudom hogy a templomban az orgona az rendelkezik e python compilerrrel, mert klaviatura van rajta tehat gepelni lehet vele - Taki 2025
-
-void CueListWidget::onPlayAction() {
-    setStandbyIndex(standbyIndex()+1);
-}
-
-void CueListWidget::onSelectAtCurrentAction() {
-    mSelectedCues[mStandbyIndex] = !mSelectedCues[mStandbyIndex];
+void CueListWidget::selectCueAtCursor(bool selected) {
+    if (mSelectedCues[mStandbyIndex] == selected) return;
+    mSelectedCues[mStandbyIndex] = selected;
+    this->updateSelectionRanges();
     this->repaintCue(mStandbyIndex);
+}
+
+void CueListWidget::selectAllCues(bool select) {
+    std::fill(mSelectedCues.begin(), mSelectedCues.end(), select);
+    this->updateSelectionRanges();
+    this->repaint();
+}
+
+void CueListWidget::selectCuesInRange(int start, int end, bool select) {
+    if (start < 0) start = 0;
+    if (end >= backend.getLength()) end = backend.getLength() - 1;
+    if (start > end) return;
+
+    std::fill(mSelectedCues.begin() + start, mSelectedCues.begin() + end + 1, select);
+    this->updateSelectionRanges();
+    this->repaint(QRect(
+        0, 
+        start*ROW_TOTAL_H + TOP_OFFSET - GAP_WIDTH-1, 
+        width(),
+        (end - start + 1) * ROW_TOTAL_H + 2 * GAP_WIDTH + 2)
+    );
 }
 
 void CueListWidget::repaintCue(int index) {
     if (index < 0 || index >= backend.getLength()) return;
-    this->repaint(QRect(0, index*ROW_TOTAL_H + TOP_OFFSET, width(), ROW_TOTAL_H));
+    this->repaint(QRect(0, index*ROW_TOTAL_H + TOP_OFFSET - GAP_WIDTH-1, width(), ROW_TOTAL_H+1));
+}
+
+// Split the selected cues into continuous ranges for rendering selection highlights
+void CueListWidget::updateSelectionRanges() {
+    int start = -1;
+    mSelectionRanges.clear();
+    //qDebug("---------------------");
+    if (mSelectedCues[0]) start = 0;
+
+    for (int i = 0; i < mSelectedCues.size()-1; i++) {
+        if (!mSelectedCues[i] && mSelectedCues[i+1]) {
+            start = i+1;
+        } else if (mSelectedCues[i] && !mSelectedCues[i+1]) {
+            if (start != -1) {
+                //qDebug() << ">" << start << "-" << i;
+                mSelectionRanges.push_back({start, i});
+                start = -1;
+            }   
+        }
+    }
+    if (start != -1 && mSelectedCues.back())
+        mSelectionRanges.push_back({start, (int)mSelectedCues.size()-1});
 }
