@@ -39,9 +39,9 @@ private:
     SettingsInterfacePage* mInterfacePage;
 public:
     explicit SettingsWidget(QWidget* parent);
-    void applyPressed();
-    void cancelPressed();
-    void okPressed();
+    void onApplyPressed();
+    void onCancelPressed();
+    void onOkPressed();
     void applySettings();
 };
 

@@ -1,6 +1,7 @@
 #include "ui/QTUI.h"
 
 #include <QVBoxLayout>
+#include <QFileDialog>
 #include <QFile>
 #include <QDir>
 
@@ -213,12 +214,29 @@ void QTUI::resizeEvent(QResizeEvent* event) {
 
 void QTUI::applyTheme(QString path) {
     QIcon::setThemeName("breeze-dark"); // dark themed icons
-    qApp->setStyleSheet(loadTheme(path));
+    Theme t(path);
+    qApp->setStyleSheet(t.mStylesheet);
 }
 
 
 void QTUI::onNewAction() {}
-void QTUI::onOpenAction() {}
+void QTUI::onOpenAction() {
+    // Mostly just a test for file dialogs
+    QFileDialog dialog(this);
+    dialog.setWindowTitle("Open Session");
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    dialog.setNameFilter("Session Files (*.cep)");
+    dialog.setOption(QFileDialog::DontUseNativeDialog);
+
+    if (dialog.exec()) {
+        QStringList files = dialog.selectedFiles();
+        if (!files.isEmpty()) {
+            QString sessionPath = files.first();
+            // TODO session load
+        }
+    }
+}
 void QTUI::onSaveAction() {}
 void QTUI::onSaveAsAction() {}
 void QTUI::onPreferencesAction() {

@@ -30,9 +30,9 @@ SettingsWidget::SettingsWidget(QWidget* parent) : QDialog(parent) {
         QDialogButtonBox::Ok | QDialogButtonBox::Apply | QDialogButtonBox::Cancel,
         this);
     mButtons->setMaximumHeight(50);
-    connect(mButtons->button(QDialogButtonBox::Apply), &QPushButton::clicked, this, &SettingsWidget::applyPressed);
-    connect(mButtons->button(QDialogButtonBox::Ok), &QPushButton::clicked, this, &SettingsWidget::okPressed);
-    connect(mButtons->button(QDialogButtonBox::Cancel), &QPushButton::clicked, this, &SettingsWidget::cancelPressed);
+    connect(mButtons->button(QDialogButtonBox::Apply), &QPushButton::clicked, this, &SettingsWidget::onApplyPressed);
+    connect(mButtons->button(QDialogButtonBox::Ok), &QPushButton::clicked, this, &SettingsWidget::onOkPressed);
+    connect(mButtons->button(QDialogButtonBox::Cancel), &QPushButton::clicked, this, &SettingsWidget::onCancelPressed);
 
 
     //Temporary
@@ -49,13 +49,13 @@ SettingsWidget::SettingsWidget(QWidget* parent) : QDialog(parent) {
     mTabsWidget->addTab(new QLabel("blah blah",this), "Stuff");
     mTabsWidget->addTab(new QLabel("alma",this), "More Stuff");
 }
-void SettingsWidget::applyPressed() {
+void SettingsWidget::onApplyPressed() {
     this->applySettings();
 }
-void SettingsWidget::cancelPressed() {
+void SettingsWidget::onCancelPressed() {
     this->reject();
 }
-void SettingsWidget::okPressed() {
+void SettingsWidget::onOkPressed() {
     this->applySettings();
     this->accept();
 }

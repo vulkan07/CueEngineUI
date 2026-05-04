@@ -121,8 +121,8 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
     mHomeAction = createKeyboardShortcut("Move to top", Qt::Key_Home, [=]{
         this->setStandbyIndex(0);
     });
-    mEndAction = createKeyboardShortcut("Move to top", Qt::Key_Home, [=]{
-        this->setStandbyIndex(0);
+    mEndAction = createKeyboardShortcut("Move to bottom", Qt::Key_End, [=]{
+        this->setStandbyIndex(backend.getLength()-1);
     });
     mUpAction = createKeyboardShortcut("Move up", Qt::Key_Up, [=]{
         this->setStandbyIndex(this->standbyIndex()-1);
