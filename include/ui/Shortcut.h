@@ -36,8 +36,15 @@ enum class ShortcutId {
 enum class ShortcutCategory {
     NONE = 0,
     APPLICATION,
-    MOVEMENT,
-    SELECTION
+    NAVIGATION,
+    SELECTION,
+    _COUNT_
+};
+static constexpr const char* ShortcutCategoryNames[] {
+    "Misc",
+    "Application",
+    "Navigation",
+    "Selection",
 };
 
 struct ShortcutData {
@@ -55,18 +62,18 @@ static constexpr ShortcutData SHORTCUT_DATA[] = {
     { ShortcutId::APP_OPEN_SETTINGS, ShortcutCategory::APPLICATION, "Open settings", "Alt+S" },
     { ShortcutId::APP_TOGGLE_SECONDARY_WINDOW, ShortcutCategory::APPLICATION, "Toggle secondary window", "Alt+W" },
 
-    { ShortcutId::CUELIST_PLAY_CURRENT_CUE, ShortcutCategory::MOVEMENT, "Play Cue", "Space" },
-    { ShortcutId::CUELIST_MOVE_UP, ShortcutCategory::MOVEMENT, "Move up", "Up" },
-    { ShortcutId::CUELIST_MOVE_DOWN, ShortcutCategory::MOVEMENT, "Move down", "Down" },
-    { ShortcutId::CUELIST_MOVE_HOME, ShortcutCategory::MOVEMENT, "Move to home", "Home" },
-    { ShortcutId::CUELIST_MOVE_END, ShortcutCategory::MOVEMENT, "Move to end", "End" },
+    { ShortcutId::CUELIST_PLAY_CURRENT_CUE, ShortcutCategory::NAVIGATION, "Play Cue", "Space" },
+    { ShortcutId::CUELIST_MOVE_UP, ShortcutCategory::NAVIGATION, "Move up", "Up" },
+    { ShortcutId::CUELIST_MOVE_DOWN, ShortcutCategory::NAVIGATION, "Move down", "Down" },
+    { ShortcutId::CUELIST_MOVE_HOME, ShortcutCategory::NAVIGATION, "Move to home", "Home" },
+    { ShortcutId::CUELIST_MOVE_END, ShortcutCategory::NAVIGATION, "Move to end", "End" },
     { ShortcutId::CUELIST_SELECT_CURRENT, ShortcutCategory::SELECTION, "Select current", "Left" },
     { ShortcutId::CUELIST_SELECT_ALL, ShortcutCategory::SELECTION, "Select all", "Ctrl+A" },
     { ShortcutId::CUELIST_SELECT_UP, ShortcutCategory::SELECTION, "Select up", "Shift+Up" },
     { ShortcutId::CUELIST_SELECT_DOWN, ShortcutCategory::SELECTION, "Select down", "Shift+Down" },
     { ShortcutId::CUELIST_SELECT_HOME, ShortcutCategory::SELECTION, "Select until home", "Shift+Home" },
     { ShortcutId::CUELIST_SELECT_END, ShortcutCategory::SELECTION, "Select until end", "Shift+End" },
-    { ShortcutId::CUELIST_DESELECT_ALL, ShortcutCategory::SELECTION, "Deelect all", "Esc" },
+    { ShortcutId::CUELIST_DESELECT_ALL, ShortcutCategory::SELECTION, "Deselect all", "Esc" },
 };
 
 const ShortcutData* GetShortcutData(ShortcutId shortcutId);

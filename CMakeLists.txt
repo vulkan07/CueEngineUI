@@ -84,4 +84,5 @@ qt_add_resources(CueEngine "resources"
         assets/images/spin-down-disabled.png
         assets/images/check-on.png
         assets/images/combo-down.png
+        assets/images/cross.png
 )

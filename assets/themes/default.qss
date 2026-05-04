@@ -414,3 +414,21 @@ QFileDialog QTreeView *
     padding: 0px;
     background: $bg2$;
 }
+
+FoldingWidget {
+    border: 2px solid $bg3$;
+}
+FoldingWidget > QPushButton {
+    image: url(:/assets/images/combo-down.png);
+}
+FoldingWidget > QLabel {
+    font-size: 12.5pt;
+    font-weight: bold;
+}
+FoldingWidget > #Line {
+    background: $bg3$;
+}
+ShortcutWidget > QPushButton {
+    image: url(:/assets/images/cross.png);
+    padding: 5px;
+}

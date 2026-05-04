@@ -2,10 +2,78 @@
 #include "ui/AnimationClock.h"
 #include "ui/QTUI.h"
 
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QKeySequenceEdit>
+FoldingWidget::FoldingWidget(QWidget* parent)
+        : FoldingWidget(nullptr, parent) {
+}
+FoldingWidget::FoldingWidget(QWidget* contentWidget, QWidget* parent)
+        : QFrame(parent), mWidget(contentWidget), mAnimHandle(new AnimationHandle) {
+    
+    auto* layout = new QVBoxLayout();
+    auto* barLayout = new QHBoxLayout();
+    this->setLayout(layout);
+    
+    mButton = new QPushButton(this);
+    mButton->setFixedSize(26,26);
+    connect(mButton, &QPushButton::pressed, this, [=]{this->setOpen(!this->isOpen());});
+    mLabel = new QLabel(this);
+    barLayout->addWidget(mLabel);
+    barLayout->addStretch();
+    barLayout->addWidget(mButton);
+    layout->addLayout(barLayout);
+
+    auto* line = new QFrame(this);
+    line->setObjectName("Line");
+    line->setFrameShape(QFrame::HLine);
+    line->setLineWidth(1);
+    line->setMidLineWidth(0);
+    layout->addWidget(line);
+
+    this->setWidget(contentWidget);
+    this->setOpen(true),
+
+    connect(&AnimationClock::getInstance(), &AnimationClock::tick, this, &FoldingWidget::animationTick);
+}
+void FoldingWidget::setWidget(QWidget* widget) { 
+    // Remove old if exists
+    if (mWidget)
+        this->layout()->removeWidget(mWidget);
+    
+    mWidget = widget;
+
+    // Set new if exists 
+    if (mWidget)
+        this->layout()->addWidget(mWidget);
+
+    // Redraw
+    this->updateGeometry();
+    this->update();
+}
+void FoldingWidget::animationTick(float dt) {
+    if (!mAnimHandle->isRunning()) return;
+    
+}
+QWidget* FoldingWidget::widget() {
+    return mWidget;
+}
+void FoldingWidget::setTitle(const QString& title) {
+    mLabel->setText(title);
+}
+QString FoldingWidget::title() const {
+    return mLabel->text();
+}
+void FoldingWidget::setOpen(bool open) {
+    if (open == mOpen) return;
+    mOpen = open;
+    if (mWidget)
+        mWidget->setVisible(open);
+    if (open && mWidget)
+        this->setMaximumHeight(QWIDGETSIZE_MAX);
+    else
+        this->setMaximumHeight(70);
+}
+bool FoldingWidget::isOpen() {
+    return mOpen;
+}
 
 SettingsWidget::SettingsWidget(QWidget* parent) : QDialog(parent) {
 
@@ -64,10 +132,51 @@ void SettingsWidget::applySettings() {
     ShortcutManager::saveShortcutsToSettings();
 }
 
+ShortcutWidget::ShortcutWidget(ShortcutId shortcutId, QWidget* parent)
+        : QFrame(parent), mShortcutId(shortcutId) {
+    auto* layout = new QHBoxLayout(this);
+    this->setLayout(layout);
+
+    mNameLabel = new QLabel("???",this);
+    mKeySequenceEdit = new QKeySequenceEdit(this);
+    mKeySequenceEdit->setFixedWidth(320);
+    mRemoveButton = new QPushButton(this);
+    mRemoveButton->setFixedSize(24,24);
+    layout->addWidget(mNameLabel);
+    layout->addWidget(mKeySequenceEdit);
+    layout->addWidget(mRemoveButton);
+
+    auto shortcutData = GetShortcutData(shortcutId);
+    if (shortcutData) {
+        mActionRef = ShortcutManager::getAction(shortcutId);
+        if (mActionRef) {
+            mNameLabel->setText(shortcutData->displayText);
+            mKeySequenceEdit->setKeySequence(mActionRef->shortcut());
+        }
+    }
+}
 
 SettingsShortcutsPage::SettingsShortcutsPage(QWidget* parent) : QWidget(parent) {
-    mLayout = new QFormLayout(this);
-    this->setLayout(mLayout);
+    this->setLayout(new QVBoxLayout);
+    mScrollWidget = new QScrollArea(this);
+    mScrollWidget->setWidgetResizable(true);
+    mScrollWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    mScrollWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    mScrollContent = new QWidget(mScrollWidget);
+    mScrollContent->setLayout(new QVBoxLayout);
+    this->layout()->addWidget(mScrollWidget);
+    mScrollWidget->setWidget(mScrollContent);
+
+    for (int i = 0; i < static_cast<int>(ShortcutCategory::_COUNT_); i++) {
+        auto* fw = new FoldingWidget(this);
+        auto* w = new QWidget(fw);
+        w->setLayout(new QVBoxLayout);
+        fw->setWidget(w);
+        fw->setTitle(ShortcutCategoryNames[i]);
+        mScrollContent->layout()->addWidget(fw);
+        mCategoryWidgets.push_back(fw);
+    }
+    mScrollContent->layout()->addWidget(new QWidget(mScrollContent));
 
     auto actions = ShortcutManager::getActions();
     for (auto i = actions.cbegin(), end = actions.cend(); i != end; ++i) {
@@ -79,11 +188,9 @@ void SettingsShortcutsPage::addShortcut(ShortcutId shortcutId, QAction* action) 
     auto* shortcutData = GetShortcutData(shortcutId);
     if (!shortcutData) return;
 
-    auto* widget = new QKeySequenceEdit(action->shortcut(), this);
-    mLayout->addRow(shortcutData->displayText, widget);
-    connect(widget, &QKeySequenceEdit::keySequenceChanged, this, [this, action](const QKeySequence &seq){
-        this->applyShortcut(action,seq);
-    });
+    auto categoryWidget = mCategoryWidgets[static_cast<int>(shortcutData->shortcutCategory)];
+    auto* widget = new ShortcutWidget(shortcutId, categoryWidget);
+    categoryWidget->widget()->layout()->addWidget(widget);
 }
 
 void SettingsShortcutsPage::applyShortcut(QAction* action, const QKeySequence& sequence) {
