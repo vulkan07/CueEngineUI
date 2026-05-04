@@ -75,9 +75,12 @@ SettingsShortcutsPage::SettingsShortcutsPage(QWidget* parent) : QWidget(parent) 
     }
 }
 
-void SettingsShortcutsPage::addShortcut(const QString& name, QAction* action) {
+void SettingsShortcutsPage::addShortcut(ShortcutId shortcutId, QAction* action) {
+    auto* shortcutData = GetShortcutData(shortcutId);
+    if (!shortcutData) return;
+
     auto* widget = new QKeySequenceEdit(action->shortcut(), this);
-    mLayout->addRow(name, widget);
+    mLayout->addRow(shortcutData->displayText, widget);
     connect(widget, &QKeySequenceEdit::keySequenceChanged, this, [this, action](const QKeySequence &seq){
         this->applyShortcut(action,seq);
     });

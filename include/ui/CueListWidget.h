@@ -8,6 +8,7 @@
 #include <functional>
 
 #include "ui/AnimationClock.h"
+#include "ui/Shortcut.h"
 
 enum class CueListColumnTypes : int {
     INDEX,
@@ -31,7 +32,7 @@ struct ColumnData {
     int width;
     int minimumWidth;
     int textAlignment = Qt::AlignVCenter | Qt::AlignLeft;
-    ResizeMode ResizeMode;
+    ResizeMode resizeMode;
 };
 
 static std::array<ColumnData, static_cast<int>(CueListColumnTypes::_COUNT_)> CueListColumns {{
@@ -81,7 +82,7 @@ private:
     const CueListHeader* const header; // only reference, not owned by this
     QScrollBar* const vScrollBar; // only reference, this class handles scrolling to the cue when standby index changes 
 
-    QAction* createKeyboardShortcut(const char* name, QKeySequence shortcut, std::function<void()> callback);
+    QAction* createKeyboardAction(ShortcutId shortcutId, std::function<void()> callback);
     
     // Control
     QAction* mPlayAction;

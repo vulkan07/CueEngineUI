@@ -45,6 +45,9 @@ qt_add_executable(CueEngine
     "include/ui/Theme.h"
     "src/ui/Theme.cpp"
 
+    "include/ui/Shortcut.h"
+    "src/ui/Shortcut.cpp"
+
     "include/backend/Cue.h"
     "src/backend/Cue.cpp"
 

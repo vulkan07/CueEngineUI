@@ -22,7 +22,7 @@ CueListHeader::CueListHeader(QWidget* parent) : QWidget(parent) {
     for (int i = 0; i < CueListColumns.size(); i++) {
     
         auto widget = new QLabel(CueListColumns[i].name, this);
-        if (CueListColumns[i].ResizeMode != ResizeMode::STRETCHING) {
+        if (CueListColumns[i].resizeMode != ResizeMode::STRETCHING) {
             widget->setFixedWidth(CueListColumns[i].width);
         }
         widget->setAutoFillBackground(true);
@@ -59,7 +59,7 @@ void CueListHeader::mouseMoveEvent(QMouseEvent* event) {
     if (mGrabbedIndex < 1) 
         return;
 
-    if (CueListColumns[mGrabbedIndex-1].ResizeMode == ResizeMode::FIXED)
+    if (CueListColumns[mGrabbedIndex-1].resizeMode == ResizeMode::FIXED)
         return;
 
     int mouseX = event->pos().x();
@@ -89,9 +89,9 @@ void CueListHeader::mouseMoveEvent(QMouseEvent* event) {
     }
 
 
-    if (CueListColumns[mGrabbedIndex-1].ResizeMode != ResizeMode::STRETCHING)
+    if (CueListColumns[mGrabbedIndex-1].resizeMode != ResizeMode::STRETCHING)
         w1->setFixedWidth(size1);
-    if (CueListColumns[mGrabbedIndex].ResizeMode != ResizeMode::STRETCHING)
+    if (CueListColumns[mGrabbedIndex].resizeMode != ResizeMode::STRETCHING)
         w2->setFixedWidth(size2);
 
     mGrabOrigin += dx;
@@ -102,13 +102,12 @@ int CueListHeader::getHeaderWidth(int index) const {
     return mWidgets[index]->width();
 }
 
-QAction* CueListWidget::createKeyboardShortcut(const char* name, QKeySequence shortcut, std::function<void()> callback) {
+QAction* CueListWidget::createKeyboardAction(ShortcutId shortcutId, std::function<void()> callback) {
     QAction* a = new QAction(this);
-    a->setShortcut(shortcut);
+    ShortcutManager::registerAction(shortcutId, a); // Sets the shortcut for the action (from settings or default)
     a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(a, &QAction::triggered, this, callback);
     this->addAction(a);
-    ShortcutManager::registerAction(name, a);
     return a;
 }
 
@@ -118,47 +117,47 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
     this->setFocusPolicy(Qt::StrongFocus);
 
     // Keyboard shortcuts specific to this widget
-    mHomeAction = createKeyboardShortcut("Move to top", Qt::Key_Home, [=]{
+    mHomeAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_HOME, [=]{
         this->setStandbyIndex(0);
     });
-    mEndAction = createKeyboardShortcut("Move to bottom", Qt::Key_End, [=]{
+    mEndAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_END, [=]{
         this->setStandbyIndex(backend.getLength()-1);
     });
-    mUpAction = createKeyboardShortcut("Move up", Qt::Key_Up, [=]{
+    mUpAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_UP, [=]{
         this->setStandbyIndex(this->standbyIndex()-1);
     });
-    mDownAction = createKeyboardShortcut("Move down", Qt::Key_Down, [=]{
+    mDownAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_DOWN, [=]{
         this->setStandbyIndex(this->standbyIndex()+1);
     });
-    mPlayAction = createKeyboardShortcut("Play cue", Qt::Key_Space, [=]{
+    mPlayAction = createKeyboardAction(ShortcutId::CUELIST_PLAY_CURRENT_CUE, [=]{
         // TODO cue action here
         this->setStandbyIndex(this->standbyIndex()+1);
     });
-    mSelectAtCursorAction = createKeyboardShortcut("Select current cue", Qt::Key_Left, [=]{
+    mSelectAtCursorAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_CURRENT, [=]{
         this->selectCueAtCursor(!mSelectedCues[this->standbyIndex()]);
     });
-    mSelectAllAction = createKeyboardShortcut("Select all cues", Qt::Key_Control | Qt::Key_A, [=]{
+    mSelectAllAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_ALL, [=]{
         this->selectAllCues(true);
     });
-    mDeselectAllAction = createKeyboardShortcut("Deselect all cues", Qt::Key_Escape, [=]{
+    mDeselectAllAction = createKeyboardAction(ShortcutId::CUELIST_DESELECT_ALL, [=]{
         this->selectAllCues(false);
     });
-    mSelectCursorUpAction = createKeyboardShortcut("Select up", Qt::Key_Shift | Qt::Key_Up, [=]{
+    mSelectCursorUpAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_UP, [=]{
         int index = this->standbyIndex();
         this->selectCuesInRange(index-1, index, true);
         this->setStandbyIndex(index-1);
     });
-    mSelectCursorDownAction = createKeyboardShortcut("Select down", Qt::Key_Shift | Qt::Key_Down, [=]{
+    mSelectCursorDownAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_DOWN, [=]{
         int index = this->standbyIndex();
         this->selectCuesInRange(index, index+1, true);
         this->setStandbyIndex(index+1);
     });
-    mSelectCursorUntilHomeAction = createKeyboardShortcut("Select until home", Qt::Key_Shift | Qt::Key_Home, [=]{
+    mSelectCursorUntilHomeAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_HOME, [=]{
         int index = this->standbyIndex();
         this->selectCuesInRange(0, index, true);
         this->setStandbyIndex(0);
     });
-    mSelectCursorUntilEndAction = createKeyboardShortcut("Select until end", Qt::Key_Shift | Qt::Key_End, [=]{
+    mSelectCursorUntilEndAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_END, [=]{
         this->selectCuesInRange(this->standbyIndex(), backend.getLength()-1, true);
         this->setStandbyIndex(backend.getLength()-1);
     });

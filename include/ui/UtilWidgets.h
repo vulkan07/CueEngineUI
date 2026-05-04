@@ -8,6 +8,7 @@
 #include <QCheckBox>
 #include <QSpinBox>
 
+#include "ui/Shortcut.h"
 
 class SettingsShortcutsPage : public QWidget {
     Q_OBJECT
@@ -15,7 +16,7 @@ private:
     QFormLayout* mLayout;
 public:
     explicit SettingsShortcutsPage(QWidget* parent);
-    void addShortcut(const QString& name, QAction* action);
+    void addShortcut(ShortcutId shortcutId, QAction* action);
     void applyShortcut(QAction* action, const QKeySequence& sequence);
 };
 

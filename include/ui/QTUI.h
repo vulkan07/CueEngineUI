@@ -1,6 +1,7 @@
 #include "ui/PanelWidgets.h"
 #include "ui/UtilWidgets.h"
 #include "ui/Theme.h"
+#include "ui/Shortcut.h"
 
 #include <QLabel>
 #include <QFrame>
@@ -14,6 +15,7 @@
 #include <QSplitter>
 #include <QResizeEvent>
 #include <QSettings>
+#include <QShortcut>
 
 class SecondaryWindow : public QFrame {
     Q_OBJECT
@@ -104,23 +106,4 @@ public:
     static constexpr int RIGHT_PANEL_WIDTH = 250;
     static constexpr int TOP_PANEL_HEIGHT = 225;
     static constexpr int BOTTOM_PANEL_HEIGHT = 300;
-};
-
-
-// Register QActions here that should appear in the settings' shortcuts page
-
-// TODO probably a list/vector should be used as the order of shortcuts is arbitrary from QMap
-class ShortcutManager : public QObject {
-    Q_OBJECT
-private:
-    static QMap<QString, QAction*> actions;
-public:
-    const static QString SETTINGS_PREFIX;
-    static void registerAction(const QString& name, QAction* action);
-
-    // also return an iterator maybe rather than the list itself?
-    static const QMap<QString, QAction*>& getActions();
-
-    static void loadShortcutsFromSettings();
-    static void saveShortcutsToSettings();
 };

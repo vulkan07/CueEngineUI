@@ -133,10 +133,12 @@ void QTUI::start() {
     mAboutMenu->addAction(mAboutCueEngineAction);
     mAboutMenu->addAction(mAboutQtAction);
 
+    /*
     ShortcutManager::registerAction("Toggle secondary window", mSecondaryWindowAction);
     ShortcutManager::registerAction("Open settings", mPreferencesAction);
     ShortcutManager::registerAction("Duplicate cues", mDuplicateAction);
     ShortcutManager::registerAction("Exit application", mExitAction);
+    */
 
     layout->addWidget(mMenubar);
 
@@ -279,51 +281,6 @@ SecondaryWindow::SecondaryWindow() : QFrame() {
 }
 void SecondaryWindow::closeEvent(QCloseEvent* event) {
     emit closed();
-}
-
-
-
-const QString ShortcutManager::SETTINGS_PREFIX = "shortcuts";
-
-QMap<QString, QAction*> ShortcutManager::actions = QMap<QString, QAction*>();
-
-void ShortcutManager::registerAction(const QString& name, QAction* action) {
-    ShortcutManager::actions[name] = action;
-}
-
-const QMap<QString, QAction*>& ShortcutManager::getActions() {
-    return ShortcutManager::actions;
-}
-
-void ShortcutManager::loadShortcutsFromSettings() {
-    QSettings settings;
-    settings.beginGroup(SETTINGS_PREFIX);
-
-    for (auto i = actions.cbegin(), end = actions.cend(); i != end; ++i) {
-        
-        auto stringList = settings.value(i.key()).toStringList();
-        QList<QKeySequence> sequences; 
-        
-        for (auto sequence : stringList) {
-            sequences.push_back(QKeySequence(sequence));
-        }
-
-        i.value()->setShortcuts(sequences);
-    }
-    settings.endGroup();
-}
-
-void ShortcutManager::saveShortcutsToSettings() {
-    QSettings settings;
-    settings.beginGroup(SETTINGS_PREFIX);
-    for (auto i = actions.cbegin(), end = actions.cend(); i != end; ++i) {
-        QStringList list;
-        for (auto s : i.value()->shortcuts()) {
-            list.push_back(s.toString());
-        }
-        settings.setValue(i.key(), list);
-    }
-    settings.endGroup();
 }
 
 
