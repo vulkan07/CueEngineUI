@@ -57,10 +57,6 @@ struct SettingsState {
     // ...
 };
 
-#include <concepts>
-template <typename T> // A settings state struct for the page
-concept Balls = requires(T t) {t.apple;};
-
 class SettingsPage : public QWidget {
     Q_OBJECT
 private:
