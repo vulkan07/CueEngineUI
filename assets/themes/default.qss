@@ -2,6 +2,7 @@
 #PALETTE
 bg1: #070705
 bg2: #161616
+bgmid: #1c1c1d
 bg_darker2: #121211
 bg3: #303030
 bg4: #393939
@@ -322,8 +323,8 @@ QDialogButtonBox QPushButton {
     padding: 3px 5px;
 }
 
-SettingsWidget {
-    background: $bg2$;
+SettingsWidget, SettingsWidget > QTabWidget > * {
+    background: $bg1$;
 }
 
 QToolTip {
@@ -416,7 +417,8 @@ QFileDialog QTreeView *
 }
 
 FoldingWidget {
-    border: 2px solid $bg3$;
+    border: 3px solid #90101010;
+    background: $bgmid$;
 }
 FoldingWidget > QPushButton {
     image: url(:/assets/images/combo-down.png);
@@ -428,7 +430,23 @@ FoldingWidget > QLabel {
 FoldingWidget > #Line {
     background: $bg3$;
 }
+ShortcutWidget[state="modified"] {
+    border: $border_w$ solid $hl_fg2$;
+    background: $hl_bg$;
+}
+ShortcutWidget[state="invalid"] {
+    border: $border_w$ solid #ff0000;
+    background: #300000;
+}
 ShortcutWidget > QPushButton {
     image: url(:/assets/images/cross.png);
     padding: 5px;
+}
+SettingsShortcutsPage > QScrollArea {
+    padding: 0px;
+    background:$bg2$;
+}
+QKeySequenceEdit QWidget:focus {
+    border-color: #dddd00;
+    background: #554400;
 }

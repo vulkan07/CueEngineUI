@@ -1,6 +1,7 @@
 #include "ui/UtilWidgets.h"
 #include "ui/AnimationClock.h"
 #include "ui/QTUI.h"
+#include <spdlog/spdlog.h>
 
 FoldingWidget::FoldingWidget(QWidget* parent)
         : FoldingWidget(nullptr, parent) {
@@ -11,6 +12,7 @@ FoldingWidget::FoldingWidget(QWidget* contentWidget, QWidget* parent)
     auto* layout = new QVBoxLayout();
     auto* barLayout = new QHBoxLayout();
     this->setLayout(layout);
+    layout->setContentsMargins(2,2,2,2);
     
     mButton = new QPushButton(this);
     mButton->setFixedSize(26,26);
@@ -24,8 +26,7 @@ FoldingWidget::FoldingWidget(QWidget* contentWidget, QWidget* parent)
     auto* line = new QFrame(this);
     line->setObjectName("Line");
     line->setFrameShape(QFrame::HLine);
-    line->setLineWidth(1);
-    line->setMidLineWidth(0);
+    line->setFixedHeight(2);
     layout->addWidget(line);
 
     this->setWidget(contentWidget);
@@ -69,7 +70,7 @@ void FoldingWidget::setOpen(bool open) {
     if (open && mWidget)
         this->setMaximumHeight(QWIDGETSIZE_MAX);
     else
-        this->setMaximumHeight(70);
+        this->setMaximumHeight(60);
 }
 bool FoldingWidget::isOpen() {
     return mOpen;
@@ -104,7 +105,7 @@ SettingsWidget::SettingsWidget(QWidget* parent) : QDialog(parent) {
 
 
     //Temporary
-    auto* label = new QLabel("Note: settings get applied immediately as of now!");
+    auto* label = new QLabel("Note: fos");
     label->setAlignment(Qt::AlignCenter);
     label->setStyleSheet("color:gold; font-weight:bold; margin: 4px;");
     layout->addWidget(label);
@@ -132,49 +133,101 @@ void SettingsWidget::applySettings() {
     ShortcutManager::saveShortcutsToSettings();
 }
 
+void ShortcutWidget::onShortcutModified(QKeySequenceEdit* widget) {
+    auto sequence = widget->keySequence();
+    if (sequence.count() == 0)
+        return;
+
+    int key = sequence[0].key();
+
+    // For better UX, since one edit widget can only store one sequence,
+    // end recording if the sequence is finished (any non-modifier key pressed) 
+    if (!( key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta)) {
+        widget->clearFocus();
+    }
+}
+
 ShortcutWidget::ShortcutWidget(ShortcutId shortcutId, QWidget* parent)
         : QFrame(parent), mShortcutId(shortcutId) {
+
+    //this->setProperty("state","modified // invalid"); // change color of widget
     auto* layout = new QHBoxLayout(this);
     this->setLayout(layout);
+    layout->setContentsMargins(4,1,4,1);
 
     mNameLabel = new QLabel("???",this);
-    mKeySequenceEdit = new QKeySequenceEdit(this);
-    mKeySequenceEdit->setFixedWidth(320);
+
+    mKeySequenceEdit1 = new QKeySequenceEdit(this);
+    mKeySequenceEdit1->setFixedWidth(200);
+    mKeySequenceEdit1->setClearButtonEnabled(true);
+    mKeySequenceEdit1->setMaximumSequenceLength(1);
+    connect(mKeySequenceEdit1, &QKeySequenceEdit::keySequenceChanged, this, [=]{this->onShortcutModified(mKeySequenceEdit1);});
+
+    mKeySequenceEdit2 = new QKeySequenceEdit(this);
+    mKeySequenceEdit2->setFixedWidth(200);
+    mKeySequenceEdit2->setClearButtonEnabled(true);
+    mKeySequenceEdit2->setMaximumSequenceLength(1);
+    connect(mKeySequenceEdit2, &QKeySequenceEdit::keySequenceChanged, this, [=]{this->onShortcutModified(mKeySequenceEdit2);});
+
     mRemoveButton = new QPushButton(this);
     mRemoveButton->setFixedSize(24,24);
+    connect(mRemoveButton, &QPushButton::clicked, this, [=]{ // Button press clears both shortcuts
+        this->mKeySequenceEdit1->setKeySequence({});
+        this->mKeySequenceEdit2->setKeySequence({});
+    });
+
     layout->addWidget(mNameLabel);
-    layout->addWidget(mKeySequenceEdit);
+    layout->addWidget(mKeySequenceEdit1);
+    layout->addWidget(mKeySequenceEdit2);
     layout->addWidget(mRemoveButton);
 
+    // Load sequences from ShortcutManager into the edit widgets
     auto shortcutData = GetShortcutData(shortcutId);
     if (shortcutData) {
         mActionRef = ShortcutManager::getAction(shortcutId);
         if (mActionRef) {
             mNameLabel->setText(shortcutData->displayText);
-            mKeySequenceEdit->setKeySequence(mActionRef->shortcut());
+            auto shortcuts = mActionRef->shortcuts();
+            if (shortcuts.length() == 1) {
+                mKeySequenceEdit1->setKeySequence(shortcuts[0]);
+            }
+            else if (shortcuts.length() > 1) {
+                mKeySequenceEdit1->setKeySequence(shortcuts[0]);
+                mKeySequenceEdit2->setKeySequence(shortcuts[1]);
+            }
+            if (shortcuts.length() > 2) {
+                spdlog::error("Action {} has more than the allowed shortcuts (2)", static_cast<int>(shortcutId));
+            }
         }
     }
 }
 
 SettingsShortcutsPage::SettingsShortcutsPage(QWidget* parent) : QWidget(parent) {
     this->setLayout(new QVBoxLayout);
+
     mScrollWidget = new QScrollArea(this);
     mScrollWidget->setWidgetResizable(true);
     mScrollWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     mScrollWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    this->layout()->addWidget(mScrollWidget);
+
     mScrollContent = new QWidget(mScrollWidget);
     mScrollContent->setLayout(new QVBoxLayout);
-    this->layout()->addWidget(mScrollWidget);
+    mScrollContent->layout()->setSpacing(10);
     mScrollWidget->setWidget(mScrollContent);
 
+    // Auto-create a folding widget inside thes scroll area for each shortcut category
     for (int i = 0; i < static_cast<int>(ShortcutCategory::_COUNT_); i++) {
-        auto* fw = new FoldingWidget(this);
-        auto* w = new QWidget(fw);
-        w->setLayout(new QVBoxLayout);
-        fw->setWidget(w);
-        fw->setTitle(ShortcutCategoryNames[i]);
-        mScrollContent->layout()->addWidget(fw);
-        mCategoryWidgets.push_back(fw);
+        auto* foldingWidget = new FoldingWidget(this);
+        auto* contentWidget = new QWidget(foldingWidget); // Contains the ShortcutWidgets in a VboxLayout
+        contentWidget->setLayout(new QVBoxLayout);
+        contentWidget->layout()->setSpacing(8);
+        contentWidget->layout()->setContentsMargins(0,0,0,0);
+        foldingWidget->setWidget(contentWidget);
+        foldingWidget->setTitle(ShortcutCategoryNames[i]);
+
+        mScrollContent->layout()->addWidget(foldingWidget);
+        mCategoryWidgets.push_back(foldingWidget);
     }
     mScrollContent->layout()->addWidget(new QWidget(mScrollContent));
 
@@ -194,8 +247,7 @@ void SettingsShortcutsPage::addShortcut(ShortcutId shortcutId, QAction* action) 
 }
 
 void SettingsShortcutsPage::applyShortcut(QAction* action, const QKeySequence& sequence) {
-    // TODO apply checks here (eg. if the sequence is already used by another action...)
-    action->setShortcut(sequence);
+    // TODO Rework settings applying
 }
 
 

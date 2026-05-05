@@ -295,4 +295,6 @@ void SecondaryWindow::closeEvent(QCloseEvent* event) {
 
 (4) Both the widget, and its layout have content margins set bruh
 
+(5) Q_OBJECTs don't support templates
+
 ===================================================*/

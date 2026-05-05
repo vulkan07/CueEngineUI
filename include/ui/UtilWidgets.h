@@ -43,14 +43,49 @@ public:
     void animationTick(float dt);
 };
 
+
+//--------------------------------------------------------------------------------
+// TODO: implement SettingsPage class to unify handling of loading/saving/discarding
+// settings properly with states rather than QSetting writes everywhere.
+// This would also allow settings fields to show if they are modified and not applied yet.
+// Sth like this:
+struct ShortcutSettingsState {/*...*/};
+struct InterfaceSettingsState {/*...*/};
+struct SettingsState {
+    ShortcutSettingsState shortcuts;
+    InterfaceSettingsState interface;
+    // ...
+};
+
+#include <concepts>
+template <typename T> // A settings state struct for the page
+concept Balls = requires(T t) {t.apple;};
+
+class SettingsPage : public QWidget {
+    Q_OBJECT
+private:
+    void* mBaseState; // some adequate type instead
+    void* mNewState;
+public:
+    explicit SettingsPage(QWidget* parent);
+
+    void fromSettingsState(void* state);
+    void applySettings(void* state);
+};
+//--------------------------------------------------------------------------------
+
+
+// Encompasses a line in the shortcut editor for each action
 class ShortcutWidget : public QFrame {
     Q_OBJECT
 private:
     QLabel* mNameLabel;
-    QKeySequenceEdit* mKeySequenceEdit;
+    QKeySequenceEdit* mKeySequenceEdit1;
+    QKeySequenceEdit* mKeySequenceEdit2;
     QPushButton* mRemoveButton;
-    QAction* mActionRef = nullptr;
+    QAction* mActionRef = nullptr; // Points to the QAction that this shortcut field belongs to
     ShortcutId mShortcutId;
+    void onShortcutModified(QKeySequenceEdit* widget);
 public:
     explicit ShortcutWidget(ShortcutId shortcutId, QWidget* parent);
 };
@@ -60,7 +95,7 @@ class SettingsShortcutsPage : public QWidget {
 private:
     QScrollArea* mScrollWidget;
     QWidget* mScrollContent;
-    std::vector<FoldingWidget*> mCategoryWidgets;
+    std::vector<FoldingWidget*> mCategoryWidgets; // Index of the widgets map to ShortcutCategory enum
 public:
     explicit SettingsShortcutsPage(QWidget* parent);
     void addShortcut(ShortcutId shortcutId, QAction* action);
