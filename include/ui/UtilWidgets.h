@@ -125,8 +125,8 @@ public:
 };
 
 
-class AboutCueEngineWidget : public QDialog {
+class AboutAppWidget : public QDialog {
     Q_OBJECT
 public:
-    explicit AboutCueEngineWidget(QWidget* parent);
+    explicit AboutAppWidget(QWidget* parent);
 };

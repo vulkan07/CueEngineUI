@@ -1,4 +1,4 @@
-/* NOTE: CueEngine Theme parser reads this part and replaces $vars$ in the qss */
+/* NOTE: Theme parser reads this part and replaces $vars$ in the qss */
 #PALETTE
 bg1: #070705
 bg2: #161616
@@ -425,7 +425,7 @@ FoldingWidget > QPushButton {
 }
 FoldingWidget > QLabel {
     font-size: 12.5pt;
-    font-weight: bold;
+    font-weight: 500;
 }
 FoldingWidget > #Line {
     background: $bg3$;

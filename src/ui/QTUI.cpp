@@ -1,6 +1,7 @@
 #include "ui/QTUI.h"
 
 #include <QVBoxLayout>
+#include <QWindow>
 #include <QFileDialog>
 #include <QFile>
 #include <QDir>
@@ -9,12 +10,29 @@
 #include <QVariant>
 
 
-QTUI::QTUI(QWidget* parent)
-    : QFrame(parent) {
+QTUI::QTUI(QWidget* parent) : QFrame(parent) {
 
+    // Minimal splash screen image (QSplashScreen adds startup delay while this does not)
+    // Disable with --nosplash
+    mSplashWidget = new QLabel();
+    if (!QCoreApplication::arguments().contains("--nosplash")) {
+        QPixmap pixmap(":/assets/images/splash.png");
+        if (!pixmap.isNull()) {
+            mSplashWidget->setWindowFlags(Qt::SplashScreen | Qt::FramelessWindowHint);
+            mSplashWidget->setPixmap(pixmap);
+            mSplashWidget->setFixedSize(pixmap.size());
+            mSplashWidget->show();
+            mSplashWidget->repaint();
+            mSplashWidget->raise();
+            while (!mSplashWidget->windowHandle() || !mSplashWidget->windowHandle()->isExposed())
+                QCoreApplication::processEvents(); // Make sure the splash window appears before any thread blocking
+        }
+    }
 }
 
 void QTUI::start() {
+    this->setWindowTitle( QString("%1 (v%2)").arg(APP_NAME, APP_VERSION) );
+    QApplication::setWindowIcon(QIcon(":/assets/images/app-icon.png"));
 
     QCoreApplication::setOrganizationName("KFG Studio");
     QCoreApplication::setApplicationName("Cue Engine");
@@ -64,25 +82,9 @@ void QTUI::start() {
     mSecondaryWindowAction = new QAction("Secondary window", this);
     mSecondaryWindowAction->setCheckable(true);
     //
-    mAboutCueEngineAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), "About Cue Engine", this);
+    mAboutAppAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), "About Cue Engine", this);
     mAboutQtAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), "About Qt", this);
 
-
-    mNewAction->setShortcuts(QKeySequence::New);
-    mOpenAction->setShortcuts(QKeySequence::Open);
-    mSaveAction->setShortcuts(QKeySequence::Save);
-    mSaveAsAction->setShortcuts(QKeySequence::SaveAs);
-    mPreferencesAction->setShortcut(QKeySequence("Alt+S"));
-    mExitAction->setShortcuts(QKeySequence::Quit);
-    //
-    mUndoAction->setShortcuts(QKeySequence::Undo);
-    mRedoAction->setShortcuts(QKeySequence::Redo);
-    mCutAction->setShortcuts(QKeySequence::Cut);
-    mCopyAction->setShortcuts(QKeySequence::Copy);
-    mPasteAction->setShortcuts(QKeySequence::Paste);
-    mDuplicateAction->setShortcut(QKeySequence("Ctrl+D"));
-    mSelectAllAction->setShortcuts(QKeySequence::SelectAll);
-    mDeselectAllAction->setShortcut(QKeySequence("Ctrl+Shift+A"));
 
     connect(mNewAction, &QAction::triggered, this, &QTUI::onNewAction);
     connect(mOpenAction, &QAction::triggered, this, &QTUI::onOpenAction);
@@ -103,7 +105,7 @@ void QTUI::start() {
 
     connect(mSecondaryWindowAction, &QAction::triggered, this, &QTUI::onSecondaryWindowAction);
 
-    connect(mAboutCueEngineAction, &QAction::triggered, this, &QTUI::onAboutCueEngineAction);
+    connect(mAboutAppAction, &QAction::triggered, this, &QTUI::onAboutAppAction);
     connect(mAboutQtAction, &QAction::triggered, this, &QTUI::onAboutQtAction);
 
 
@@ -130,15 +132,13 @@ void QTUI::start() {
     //
     mWindowMenu->addAction(mSecondaryWindowAction);
     //
-    mAboutMenu->addAction(mAboutCueEngineAction);
+    mAboutMenu->addAction(mAboutAppAction);
     mAboutMenu->addAction(mAboutQtAction);
 
-    /*
-    ShortcutManager::registerAction("Toggle secondary window", mSecondaryWindowAction);
-    ShortcutManager::registerAction("Open settings", mPreferencesAction);
-    ShortcutManager::registerAction("Duplicate cues", mDuplicateAction);
-    ShortcutManager::registerAction("Exit application", mExitAction);
-    */
+    ShortcutManager::registerAction(ShortcutId::APP_TOGGLE_SECONDARY_WINDOW, mSecondaryWindowAction);
+    ShortcutManager::registerAction(ShortcutId::APP_OPEN_SETTINGS, mPreferencesAction);
+    ShortcutManager::registerAction(ShortcutId::APP_EXIT, mExitAction);
+    //ShortcutManager::registerAction(ShortcutId::, mDuplicateAction);
 
     layout->addWidget(mMenubar);
 
@@ -179,13 +179,15 @@ void QTUI::start() {
     mMainSplitter->setSizes({width(), RIGHT_PANEL_WIDTH});  
     mLeftSplitter->setSizes({TOP_PANEL_HEIGHT, height(), BOTTOM_PANEL_HEIGHT});   
 
-    this->setWindowTitle("Cue Engine");
     this->setLayout(layout);
-    this->show();
     mSecondaryWindow = new SecondaryWindow(); // starts hidden
     connect(mSecondaryWindow, &SecondaryWindow::closed, this, [&]{mSecondaryWindowAction->setChecked(false);});
 
     ShortcutManager::loadShortcutsFromSettings();
+
+    this->show();
+    mSplashWidget->hide();
+    mSplashWidget->deleteLater();
 }
 
 void QTUI::closeEvent(QCloseEvent* event) {
@@ -263,8 +265,8 @@ void QTUI::onSecondaryWindowAction() {
     mSecondaryWindow->setVisible(mSecondaryWindowAction->isChecked());
 }
 
-void QTUI::onAboutCueEngineAction() {
-    AboutCueEngineWidget* w = new AboutCueEngineWidget(this);
+void QTUI::onAboutAppAction() {
+    AboutAppWidget* w = new AboutAppWidget(this);
     w->open();
 }
 void QTUI::onAboutQtAction() {

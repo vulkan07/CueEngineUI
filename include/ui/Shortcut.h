@@ -19,7 +19,6 @@ enum class ShortcutId {
     APP_OPEN_SETTINGS,
     APP_TOGGLE_SECONDARY_WINDOW,
 
-    CUELIST_PLAY_CURRENT_CUE,
     CUELIST_MOVE_UP,
     CUELIST_MOVE_DOWN,
     CUELIST_MOVE_HOME,
@@ -31,6 +30,17 @@ enum class ShortcutId {
     CUELIST_SELECT_HOME,
     CUELIST_SELECT_END,
     CUELIST_DESELECT_ALL,
+
+    CUELIST_DELETE_SELECTED,
+    CUELIST_COPY_SELECTED,
+    CUELIST_CUT_SELECTED,
+    CUELIST_DUPLICATE_SELECTED,
+    CUELIST_SHIFT_UP_SELECTED,
+    CUELIST_SHIFT_DOWN_SELECTED,
+
+    CUELIST_PLAY_CURRENT_CUE,
+    CUELIST_PAUSE_CURRENT_CUE,
+    CUELIST_STOP_CURRENT_CUE,
 };
 
 enum class ShortcutCategory {
@@ -38,6 +48,8 @@ enum class ShortcutCategory {
     APPLICATION,
     NAVIGATION,
     SELECTION,
+    EDITING,
+    PLAYBACK,
     _COUNT_
 };
 static constexpr const char* ShortcutCategoryNames[] {
@@ -45,6 +57,8 @@ static constexpr const char* ShortcutCategoryNames[] {
     "Application",
     "Navigation",
     "Selection",
+    "Editing",
+    "Playback",
 };
 
 struct ShortcutData {
@@ -62,11 +76,11 @@ static constexpr ShortcutData SHORTCUT_DATA[] = {
     { ShortcutId::APP_OPEN_SETTINGS, ShortcutCategory::APPLICATION, "Open settings", "Alt+S" },
     { ShortcutId::APP_TOGGLE_SECONDARY_WINDOW, ShortcutCategory::APPLICATION, "Toggle secondary window", "Alt+W" },
 
-    { ShortcutId::CUELIST_PLAY_CURRENT_CUE, ShortcutCategory::NAVIGATION, "Play Cue", "Space" },
     { ShortcutId::CUELIST_MOVE_UP, ShortcutCategory::NAVIGATION, "Move up", "Up" },
     { ShortcutId::CUELIST_MOVE_DOWN, ShortcutCategory::NAVIGATION, "Move down", "Down" },
     { ShortcutId::CUELIST_MOVE_HOME, ShortcutCategory::NAVIGATION, "Move to home", "Home" },
     { ShortcutId::CUELIST_MOVE_END, ShortcutCategory::NAVIGATION, "Move to end", "End" },
+
     { ShortcutId::CUELIST_SELECT_CURRENT, ShortcutCategory::SELECTION, "Select current", "Left" },
     { ShortcutId::CUELIST_SELECT_ALL, ShortcutCategory::SELECTION, "Select all", "Ctrl+A" },
     { ShortcutId::CUELIST_SELECT_UP, ShortcutCategory::SELECTION, "Select up", "Shift+Up" },
@@ -74,6 +88,17 @@ static constexpr ShortcutData SHORTCUT_DATA[] = {
     { ShortcutId::CUELIST_SELECT_HOME, ShortcutCategory::SELECTION, "Select until home", "Shift+Home" },
     { ShortcutId::CUELIST_SELECT_END, ShortcutCategory::SELECTION, "Select until end", "Shift+End" },
     { ShortcutId::CUELIST_DESELECT_ALL, ShortcutCategory::SELECTION, "Deselect all", "Esc" },
+
+    { ShortcutId::CUELIST_DELETE_SELECTED, ShortcutCategory::EDITING, "Delete selected cues", "Del" },
+    { ShortcutId::CUELIST_COPY_SELECTED, ShortcutCategory::EDITING, "Copy selected cues", "Ctrl+C" },
+    { ShortcutId::CUELIST_CUT_SELECTED, ShortcutCategory::EDITING, "Cut selected cues", "Ctrl+X" },
+    { ShortcutId::CUELIST_DUPLICATE_SELECTED, ShortcutCategory::EDITING, "Duplicate selected cues", "Ctrl+D" },
+    { ShortcutId::CUELIST_SHIFT_UP_SELECTED, ShortcutCategory::EDITING, "Shift selected cues up", "Alt+Up" },
+    { ShortcutId::CUELIST_SHIFT_DOWN_SELECTED, ShortcutCategory::EDITING, "Shift selected cues down", "Alt+Down" },
+
+    { ShortcutId::CUELIST_PLAY_CURRENT_CUE, ShortcutCategory::PLAYBACK, "Play cue", "Space" },
+    { ShortcutId::CUELIST_PAUSE_CURRENT_CUE, ShortcutCategory::PLAYBACK, "Pause cue", "P" },
+    { ShortcutId::CUELIST_STOP_CURRENT_CUE, ShortcutCategory::PLAYBACK, "Stop cue", "X" },
 };
 
 const ShortcutData* GetShortcutData(ShortcutId shortcutId);
@@ -90,6 +115,6 @@ public:
     static QAction* const getAction(ShortcutId shortcutId);
     static const QMap<ShortcutId, QAction*>& getActions();
 
-    static void loadShortcutsFromSettings();
+    static void loadShortcutsFromSettings(); // Call only after all QActions are created that should be loaded
     static void saveShortcutsToSettings();
 };

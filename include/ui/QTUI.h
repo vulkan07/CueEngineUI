@@ -17,6 +17,11 @@
 #include <QSettings>
 #include <QShortcut>
 
+
+const char* const APP_NAME = "Cue Engine";
+const char* const APP_VERSION = "0.1";
+
+
 class SecondaryWindow : public QFrame {
     Q_OBJECT
 public:
@@ -30,6 +35,7 @@ signals:
 class QTUI : public QFrame {
     Q_OBJECT
 private:
+    QLabel* mSplashWidget;
 
     QSplitter* mMainSplitter;
     QSplitter* mLeftSplitter;
@@ -69,7 +75,7 @@ private:
     QAction* mSecondaryWindowAction;
 
     // About menu
-    QAction* mAboutCueEngineAction;
+    QAction* mAboutAppAction;
     QAction* mAboutQtAction;
 
 public:
@@ -100,7 +106,7 @@ public:
 
     void onSecondaryWindowAction();
 
-    void onAboutCueEngineAction();
+    void onAboutAppAction();
     void onAboutQtAction();
 
     static constexpr int RIGHT_PANEL_WIDTH = 250;

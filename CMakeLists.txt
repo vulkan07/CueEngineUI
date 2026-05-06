@@ -1,5 +1,7 @@
+set(APP_NAME "CueEngine")
+
 cmake_minimum_required(VERSION 3.16)
-project(CueEngine VERSION 0.1 LANGUAGES CXX)
+project(${APP_NAME} VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,7 +28,7 @@ find_package(spdlog REQUIRED)
 
 # Note: Auto MOC doesn't work for some reason,
 # so each header file needs to be added here as well
-qt_add_executable(CueEngine
+qt_add_executable(${APP_NAME}
 #    "resources.qrc"
 
 
@@ -67,17 +69,19 @@ qt_add_executable(CueEngine
 
 )
 
-target_include_directories(CueEngine PRIVATE "include")
+target_include_directories(${APP_NAME} PRIVATE "include")
 
-target_link_libraries(CueEngine PRIVATE Qt6::Core Qt6::Widgets spdlog::spdlog)
+target_link_libraries(${APP_NAME} PRIVATE Qt6::Core Qt6::Widgets spdlog::spdlog)
 
 
 #FILE(GLOB Images assets/images/*) # doesnt work
 
 
-qt_add_resources(CueEngine "resources"
+qt_add_resources(${APP_NAME} "resources"
     FILES
         assets/themes/default.qss
+        assets/images/splash.png
+        assets/images/app-icon.png
         assets/images/spin-up.png
         assets/images/spin-down.png
         assets/images/spin-up-disabled.png

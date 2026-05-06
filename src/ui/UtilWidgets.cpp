@@ -85,7 +85,7 @@ SettingsWidget::SettingsWidget(QWidget* parent) : QDialog(parent) {
     layout->setSpacing(0);
 
     this->setWindowModality(Qt::ApplicationModal);
-    this->setWindowTitle("Settings");
+    this->setWindowTitle(QString(APP_NAME)+": Settings");
 
     this->setMinimumSize(QSize(700,550));
     this->resize(QSize(800,640));
@@ -134,8 +134,12 @@ void SettingsWidget::applySettings() {
 }
 
 void ShortcutWidget::onShortcutModified(QKeySequenceEdit* widget) {
+    mRemoveButton->setEnabled(
+        !(mKeySequenceEdit1->keySequence().isEmpty() && mKeySequenceEdit2->keySequence().isEmpty())
+    );
+
     auto sequence = widget->keySequence();
-    if (sequence.count() == 0)
+    if (sequence.isEmpty())
         return;
 
     int key = sequence[0].key();
@@ -221,6 +225,7 @@ SettingsShortcutsPage::SettingsShortcutsPage(QWidget* parent) : QWidget(parent) 
         auto* foldingWidget = new FoldingWidget(this);
         auto* contentWidget = new QWidget(foldingWidget); // Contains the ShortcutWidgets in a VboxLayout
         contentWidget->setLayout(new QVBoxLayout);
+        contentWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
         contentWidget->layout()->setSpacing(8);
         contentWidget->layout()->setContentsMargins(0,0,0,0);
         foldingWidget->setWidget(contentWidget);
@@ -302,7 +307,7 @@ void SettingsInterfacePage::apply() {
 }
 
 
-AboutCueEngineWidget::AboutCueEngineWidget(QWidget* parent)
+AboutAppWidget::AboutAppWidget(QWidget* parent)
     : QDialog(parent) {
 
     auto* layout = new QVBoxLayout(this);
