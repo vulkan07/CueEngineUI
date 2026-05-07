@@ -192,6 +192,7 @@ ShortcutWidget::ShortcutWidget(ShortcutId shortcutId, QWidget* parent)
         if (mActionRef) {
             mNameLabel->setText(shortcutData->displayText);
             auto shortcuts = mActionRef->shortcuts();
+            mRemoveButton->setEnabled(shortcuts.length()>0);
             if (shortcuts.length() == 1) {
                 mKeySequenceEdit1->setKeySequence(shortcuts[0]);
             }

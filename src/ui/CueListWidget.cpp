@@ -129,10 +129,6 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
     mDownAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_DOWN, [=]{
         this->setStandbyIndex(this->standbyIndex()+1);
     });
-    mPlayAction = createKeyboardAction(ShortcutId::CUELIST_PLAY_CURRENT_CUE, [=]{
-        // TODO cue action here
-        this->setStandbyIndex(this->standbyIndex()+1);
-    });
     mSelectAtCursorAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_CURRENT, [=]{
         this->selectCueAtCursor(!mSelectedCues[this->standbyIndex()]);
     });
@@ -160,6 +156,30 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
     mSelectCursorUntilEndAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_END, [=]{
         this->selectCuesInRange(this->standbyIndex(), backend.getLength()-1, true);
         this->setStandbyIndex(backend.getLength()-1);
+    });
+    mPlayAction = createKeyboardAction(ShortcutId::CUELIST_PLAY_CURRENT_CUE, [=]{
+        // TODO cue action here
+        this->setStandbyIndex(this->standbyIndex()+1);
+    });
+    mPauseAction = createKeyboardAction(ShortcutId::CUELIST_PAUSE_CURRENT_CUE, [=]{
+        // TODO cue action here
+    });
+    mStopAction = createKeyboardAction(ShortcutId::CUELIST_STOP_CURRENT_CUE, [=]{
+        // TODO cue action here
+    });
+    mDeleteSelectedAction = createKeyboardAction(ShortcutId::CUELIST_DELETE_SELECTED, [=]{
+    });
+    mCopySelectedAction = createKeyboardAction(ShortcutId::CUELIST_COPY_SELECTED, [=]{
+    });
+    mCutSelectedAction = createKeyboardAction(ShortcutId::CUELIST_CUT_SELECTED, [=]{
+    });
+    mPasteSelectedAction = createKeyboardAction(ShortcutId::CUELIST_PASTE_SELECTED, [=]{
+    });
+    mDuplicateSelectedAction = createKeyboardAction(ShortcutId::CUELIST_DUPLICATE_SELECTED, [=]{
+    });
+    mShiftUpSelectedAction = createKeyboardAction(ShortcutId::CUELIST_SHIFT_UP_SELECTED, [=]{
+    });
+    mShiftDownSelectedAction = createKeyboardAction(ShortcutId::CUELIST_SHIFT_DOWN_SELECTED, [=]{
     });
 
     // Optimizations for high FPS rendering

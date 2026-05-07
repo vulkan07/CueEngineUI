@@ -55,21 +55,8 @@ private:
     QAction* mOpenAction;
     QAction* mSaveAction;
     QAction* mSaveAsAction;
-    QAction* mPreferencesAction;
+    QAction* mSettingsAction;
     QAction* mExitAction;
-
-    // Edit menu
-    QAction* mUndoAction;
-    QAction* mRedoAction;
-    QAction* mCopyAction;
-    QAction* mCutAction;
-    QAction* mPasteAction;
-    QAction* mDuplicateAction;
-    QAction* mSelectAllAction;
-    QAction* mDeselectAllAction;
-
-    // Layout menu
-    QAction* mAutoAdvanceAction; // select next cue after starting one
 
     // Window menu
     QAction* mSecondaryWindowAction;
@@ -78,6 +65,8 @@ private:
     QAction* mAboutAppAction;
     QAction* mAboutQtAction;
 
+    inline void createActions(); // Create QActions held by this widget (application-wide shortcuts usually)
+    inline void createMenus(); // Construct the main top menubar from the existing QActions
 public:
     explicit QTUI(QWidget* parent);
     void start();
@@ -85,29 +74,6 @@ public:
 
     void closeEvent(QCloseEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
-
-    void onNewAction();
-    void onOpenAction();
-    void onSaveAction();
-    void onSaveAsAction();
-    void onPreferencesAction();
-    void onExitAction();
-    
-    void onUndoAction();
-    void onRedoAction();
-    void onCopyAction();
-    void onCutAction();
-    void onPasteAction();
-    void onDuplicateAction();
-    void onSelectAllAction();
-    void onDeselectAllAction();
-
-    void onAutoAdvanceFunction();
-
-    void onSecondaryWindowAction();
-
-    void onAboutAppAction();
-    void onAboutQtAction();
 
     static constexpr int RIGHT_PANEL_WIDTH = 250;
     static constexpr int TOP_PANEL_HEIGHT = 225;

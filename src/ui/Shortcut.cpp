@@ -19,8 +19,10 @@ const QString ShortcutManager::SETTINGS_PREFIX = "Shortcuts";
 QMap<ShortcutId, QAction*> ShortcutManager::actions = QMap<ShortcutId, QAction*>();
 
 void ShortcutManager::registerAction(ShortcutId shortcutId, QAction* action) {
-    if (action && shortcutId != ShortcutId::OTHER)
+    if (action && shortcutId != ShortcutId::OTHER) {
         ShortcutManager::actions[shortcutId] = action;
+        action->setText( GetShortcutData(shortcutId)->displayText );
+    }
 }
 
 QAction* const ShortcutManager::getAction(ShortcutId shortcutId) {

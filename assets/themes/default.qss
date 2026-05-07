@@ -425,7 +425,7 @@ FoldingWidget > QPushButton {
 }
 FoldingWidget > QLabel {
     font-size: 12.5pt;
-    font-weight: 500;
+    font-weight: bold;
 }
 FoldingWidget > #Line {
     background: $bg3$;

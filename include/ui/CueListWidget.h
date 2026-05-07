@@ -84,8 +84,10 @@ private:
 
     QAction* createKeyboardAction(ShortcutId shortcutId, std::function<void()> callback);
     
-    // Control
+    // Playback
     QAction* mPlayAction;
+    QAction* mPauseAction;
+    QAction* mStopAction;
 
     // Navigation
     QAction* mHomeAction;
@@ -101,6 +103,15 @@ private:
     QAction* mSelectCursorUntilEndAction;
     QAction* mSelectAllAction;
     QAction* mDeselectAllAction;
+
+    // Editing
+    QAction* mDeleteSelectedAction;
+    QAction* mCopySelectedAction;
+    QAction* mCutSelectedAction;
+    QAction* mPasteSelectedAction;
+    QAction* mDuplicateSelectedAction;
+    QAction* mShiftUpSelectedAction;
+    QAction* mShiftDownSelectedAction;
 
     struct SelectionRange {
         int start;

@@ -58,90 +58,7 @@ void QTUI::start() {
     mWindowMenu->setToolTipsVisible(true);
     mAboutMenu->setToolTipsVisible(true);
 
-    mNewAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentNew), "New", this);
-    mOpenAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentOpen), "Open", this);
-    mSaveAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSave), "Save", this);
-    mSaveAsAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), "Save as", this);
-    mPreferencesAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentProperties), "Settings", this);
-    mExitAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::ApplicationExit), "Exit", this);
-    //
-    mUndoAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditUndo), "Undo", this);
-    mRedoAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditRedo), "Redo", this);
-    mCutAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditCut), "Cut", this);
-    mCopyAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditCopy), "Copy", this);
-    mPasteAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditPaste), "Paste", this);
-    mDuplicateAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditPaste), "Duplicate", this);
-    mSelectAllAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditSelectAll), "Select all", this);
-    mDeselectAllAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditSelectAll), "Deselect all", this);
-    //
-    mAutoAdvanceAction = new QAction("Auto advance", this);
-    mAutoAdvanceAction->setToolTip("Automatically select the next cue after starting one");
-    mAutoAdvanceAction->setCheckable(true);
-    mAutoAdvanceAction->setChecked(true);
-    //
-    mSecondaryWindowAction = new QAction("Secondary window", this);
-    mSecondaryWindowAction->setCheckable(true);
-    //
-    mAboutAppAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), "About Cue Engine", this);
-    mAboutQtAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), "About Qt", this);
-
-
-    connect(mNewAction, &QAction::triggered, this, &QTUI::onNewAction);
-    connect(mOpenAction, &QAction::triggered, this, &QTUI::onOpenAction);
-    connect(mSaveAction, &QAction::triggered, this, &QTUI::onSaveAction);
-    connect(mSaveAsAction, &QAction::triggered, this, &QTUI::onSaveAsAction);
-    connect(mPreferencesAction, &QAction::triggered, this, &QTUI::onPreferencesAction);
-    connect(mExitAction, &QAction::triggered, this, &QTUI::onExitAction);
-    
-    connect(mUndoAction, &QAction::triggered, this, &QTUI::onUndoAction);
-    connect(mRedoAction, &QAction::triggered, this, &QTUI::onRedoAction);
-    connect(mCopyAction, &QAction::triggered, this, &QTUI::onCopyAction);
-    connect(mCutAction, &QAction::triggered, this, &QTUI::onCutAction);
-    connect(mPasteAction, &QAction::triggered, this, &QTUI::onPasteAction);
-    connect(mSelectAllAction, &QAction::triggered, this, &QTUI::onSelectAllAction);
-    connect(mDeselectAllAction, &QAction::triggered, this, &QTUI::onDeselectAllAction);
-
-    connect(mAutoAdvanceAction, &QAction::triggered, this, &QTUI::onAutoAdvanceFunction);
-
-    connect(mSecondaryWindowAction, &QAction::triggered, this, &QTUI::onSecondaryWindowAction);
-
-    connect(mAboutAppAction, &QAction::triggered, this, &QTUI::onAboutAppAction);
-    connect(mAboutQtAction, &QAction::triggered, this, &QTUI::onAboutQtAction);
-
-
-    mFileMenu->addAction(mNewAction);
-    mFileMenu->addAction(mOpenAction);
-    mFileMenu->addAction(mSaveAction);
-    mFileMenu->addAction(mSaveAsAction);
-    mFileMenu->addSeparator();
-    mFileMenu->addAction(mPreferencesAction);
-    mFileMenu->addAction(mExitAction);
-    //
-    mEditMenu->addAction(mUndoAction);
-    mEditMenu->addAction(mRedoAction);
-    mEditMenu->addSeparator();
-    mEditMenu->addAction(mCopyAction);
-    mEditMenu->addAction(mCutAction);
-    mEditMenu->addAction(mPasteAction);
-    mEditMenu->addAction(mDuplicateAction);
-    mEditMenu->addSeparator();
-    mEditMenu->addAction(mSelectAllAction);
-    mEditMenu->addAction(mDeselectAllAction);
-    //
-    mLayoutMenu->addAction(mAutoAdvanceAction);
-    //
-    mWindowMenu->addAction(mSecondaryWindowAction);
-    //
-    mAboutMenu->addAction(mAboutAppAction);
-    mAboutMenu->addAction(mAboutQtAction);
-
-    ShortcutManager::registerAction(ShortcutId::APP_TOGGLE_SECONDARY_WINDOW, mSecondaryWindowAction);
-    ShortcutManager::registerAction(ShortcutId::APP_OPEN_SETTINGS, mPreferencesAction);
-    ShortcutManager::registerAction(ShortcutId::APP_EXIT, mExitAction);
-    //ShortcutManager::registerAction(ShortcutId::, mDuplicateAction);
-
     layout->addWidget(mMenubar);
-
 
     /*---------- Panels ----------*/
     mMainSplitter = new QSplitter(Qt::Horizontal, this);
@@ -183,6 +100,10 @@ void QTUI::start() {
     mSecondaryWindow = new SecondaryWindow(); // starts hidden
     connect(mSecondaryWindow, &SecondaryWindow::closed, this, [&]{mSecondaryWindowAction->setChecked(false);});
 
+
+    this->createActions();
+    this->createMenus();
+
     ShortcutManager::loadShortcutsFromSettings();
 
     this->show();
@@ -190,9 +111,117 @@ void QTUI::start() {
     mSplashWidget->deleteLater();
 }
 
+// Helpers for creating menus from ShortcutIds
+static inline void addMenuAction(QMenu* menu, ShortcutId shortcut, QIcon icon) {
+    QAction* action = ShortcutManager::getAction(shortcut);
+    if (action) {
+        action->setIcon(icon);
+        menu->addAction(action);
+    }
+} 
+static inline void addMenuAction(QMenu* menu, ShortcutId shortcut, QIcon icon, const char* menuTextOverride) {
+    QAction* action = ShortcutManager::getAction(shortcut);
+    if (action) {
+        action->setIcon(icon);
+        action->setText(menuTextOverride);
+        menu->addAction(action);
+    }
+} 
+inline void QTUI::createMenus() {
+
+    addMenuAction(mFileMenu, ShortcutId::APP_NEW_SESSION, QIcon::fromTheme(QIcon::ThemeIcon::DocumentNew), "New");
+    addMenuAction(mFileMenu, ShortcutId::APP_OPEN_SESSION, QIcon::fromTheme(QIcon::ThemeIcon::DocumentOpen), "Open");
+    addMenuAction(mFileMenu, ShortcutId::APP_SAVE_SESSION, QIcon::fromTheme(QIcon::ThemeIcon::DocumentSave), "Save");
+    addMenuAction(mFileMenu, ShortcutId::APP_SAVE_SESSION_AS, QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), "Save as");
+    mFileMenu->addSeparator();
+    addMenuAction(mFileMenu, ShortcutId::APP_OPEN_SETTINGS, QIcon::fromTheme(QIcon::ThemeIcon::DocumentProperties), "Settings");
+    addMenuAction(mFileMenu, ShortcutId::APP_EXIT, QIcon::fromTheme(QIcon::ThemeIcon::ApplicationExit), "Exit");
+    
+    addMenuAction(mEditMenu, ShortcutId::APP_UNDO, QIcon::fromTheme(QIcon::ThemeIcon::EditUndo));
+    addMenuAction(mEditMenu, ShortcutId::APP_REDO, QIcon::fromTheme(QIcon::ThemeIcon::EditRedo));
+    mEditMenu->addSeparator();
+    addMenuAction(mEditMenu, ShortcutId::CUELIST_COPY_SELECTED, QIcon::fromTheme(QIcon::ThemeIcon::EditCopy), "Copy");
+    addMenuAction(mEditMenu, ShortcutId::CUELIST_CUT_SELECTED, QIcon::fromTheme(QIcon::ThemeIcon::EditCut), "Cut");
+    addMenuAction(mEditMenu, ShortcutId::CUELIST_PASTE_SELECTED, QIcon::fromTheme(QIcon::ThemeIcon::EditPaste), "Paste");
+    addMenuAction(mEditMenu, ShortcutId::CUELIST_DUPLICATE_SELECTED, QIcon::fromTheme(QIcon::ThemeIcon::EditPaste), "Duplicate");
+    addMenuAction(mEditMenu, ShortcutId::CUELIST_DELETE_SELECTED, QIcon::fromTheme(QIcon::ThemeIcon::EditDelete), "Delete");
+    mEditMenu->addSeparator();
+    addMenuAction(mEditMenu, ShortcutId::CUELIST_SELECT_ALL, QIcon::fromTheme(QIcon::ThemeIcon::EditSelectAll), "Select all");
+    addMenuAction(mEditMenu, ShortcutId::CUELIST_DESELECT_ALL, QIcon::fromTheme(QIcon::ThemeIcon::EditSelectAll), "Deselect all");
+    
+    addMenuAction(mWindowMenu, ShortcutId::APP_TOGGLE_SECONDARY_WINDOW, QIcon::fromTheme(QIcon::ThemeIcon::WindowNew), "Secondary window");
+    
+    // Not registered shortcuts
+    mAboutMenu->addActions({mAboutAppAction, mAboutQtAction});
+
+}
+inline void QTUI::createActions() {
+    mNewAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentNew), "New", this);
+    ShortcutManager::registerAction(ShortcutId::APP_NEW_SESSION, mNewAction);
+    connect(mNewAction, &QAction::triggered, this, [=]{});
+
+    mOpenAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentOpen), "Open", this);
+    ShortcutManager::registerAction(ShortcutId::APP_OPEN_SESSION, mOpenAction);
+    connect(mOpenAction, &QAction::triggered, this, [=]{
+        // Mostly just a test for file dialogs
+        QFileDialog dialog(this);
+        dialog.setWindowTitle("Open Session");
+        dialog.setFileMode(QFileDialog::ExistingFile);
+        dialog.setAcceptMode(QFileDialog::AcceptOpen);
+        dialog.setNameFilter("Session Files (*.cep)");
+        dialog.setOption(QFileDialog::DontUseNativeDialog);
+
+        if (dialog.exec()) {
+            QStringList files = dialog.selectedFiles();
+            if (!files.isEmpty()) {
+                QString sessionPath = files.first();
+                // TODO session load
+            }
+        }
+    });
+
+    mSaveAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSave), "Save", this);
+    ShortcutManager::registerAction(ShortcutId::APP_SAVE_SESSION, mSaveAction);
+    connect(mSaveAction, &QAction::triggered, this, [=]{});
+
+    mSaveAsAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), "Save as", this);
+    ShortcutManager::registerAction(ShortcutId::APP_SAVE_SESSION_AS, mSaveAsAction);
+    connect(mSaveAsAction, &QAction::triggered, this, [=]{});
+
+    mSettingsAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentProperties), "Settings", this);
+    ShortcutManager::registerAction(ShortcutId::APP_OPEN_SETTINGS, mSettingsAction);
+    connect(mSettingsAction, &QAction::triggered, this, [=]{
+        SettingsWidget(this).exec();
+    });
+
+    mExitAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::ApplicationExit), "Exit", this);
+    ShortcutManager::registerAction(ShortcutId::APP_EXIT, mExitAction);
+    connect(mExitAction, &QAction::triggered, this, [=]{
+        qApp->exit();
+    });
+
+    mSecondaryWindowAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::WindowNew), "Secondary window", this);
+    ShortcutManager::registerAction(ShortcutId::APP_TOGGLE_SECONDARY_WINDOW, mSecondaryWindowAction);
+    mSecondaryWindowAction->setCheckable(true);
+    connect(mSecondaryWindowAction, &QAction::triggered, this, [=]{
+        mSecondaryWindow->setVisible(mSecondaryWindowAction->isChecked());
+    });
+
+    mAboutAppAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), QString("About")+APP_NAME, this);
+    connect(mAboutAppAction, &QAction::triggered, this, [=]{
+        AboutAppWidget w(this);
+        w.exec();
+    });
+
+    mAboutQtAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), "About Qt", this);
+    connect(mAboutQtAction, &QAction::triggered, this, [=]{
+        qApp->aboutQt();
+    });
+}
+
 void QTUI::closeEvent(QCloseEvent* event) {
     QFrame::closeEvent(event);
-    this->onExitAction();
+    // TODO exit handling here
 }
 
 void QTUI::resizeEvent(QResizeEvent* event) {
@@ -221,59 +250,6 @@ void QTUI::applyTheme(QString path) {
     Theme t(path);
     qApp->setStyleSheet(t.mStylesheet);
 }
-
-
-void QTUI::onNewAction() {}
-void QTUI::onOpenAction() {
-    // Mostly just a test for file dialogs
-    QFileDialog dialog(this);
-    dialog.setWindowTitle("Open Session");
-    dialog.setFileMode(QFileDialog::ExistingFile);
-    dialog.setAcceptMode(QFileDialog::AcceptOpen);
-    dialog.setNameFilter("Session Files (*.cep)");
-    dialog.setOption(QFileDialog::DontUseNativeDialog);
-
-    if (dialog.exec()) {
-        QStringList files = dialog.selectedFiles();
-        if (!files.isEmpty()) {
-            QString sessionPath = files.first();
-            // TODO session load
-        }
-    }
-}
-void QTUI::onSaveAction() {}
-void QTUI::onSaveAsAction() {}
-void QTUI::onPreferencesAction() {
-    SettingsWidget(this).exec();
-}
-void QTUI::onExitAction() {
-    qApp->exit(); 
-}
-
-void QTUI::onUndoAction() {}
-void QTUI::onRedoAction() {}
-void QTUI::onCopyAction() {}
-void QTUI::onCutAction() {}
-void QTUI::onPasteAction() {}
-void QTUI::onDuplicateAction() {}
-void QTUI::onSelectAllAction() {}
-void QTUI::onDeselectAllAction() {}
-
-void QTUI::onAutoAdvanceFunction() {}
-
-void QTUI::onSecondaryWindowAction() {
-    mSecondaryWindow->setVisible(mSecondaryWindowAction->isChecked());
-}
-
-void QTUI::onAboutAppAction() {
-    AboutAppWidget* w = new AboutAppWidget(this);
-    w->open();
-}
-void QTUI::onAboutQtAction() {
-    qApp->aboutQt();
-}
-
-
 
 SecondaryWindow::SecondaryWindow() : QFrame() {
     this->setLayout(new QVBoxLayout(this));
