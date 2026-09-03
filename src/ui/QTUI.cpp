@@ -129,6 +129,7 @@ static inline void addMenuAction(QMenu* menu, ShortcutId shortcut, QIcon icon, c
 } 
 inline void QTUI::createMenus() {
 
+    // File menu
     addMenuAction(mFileMenu, ShortcutId::APP_NEW_SESSION, QIcon::fromTheme(QIcon::ThemeIcon::DocumentNew), "New");
     addMenuAction(mFileMenu, ShortcutId::APP_OPEN_SESSION, QIcon::fromTheme(QIcon::ThemeIcon::DocumentOpen), "Open");
     addMenuAction(mFileMenu, ShortcutId::APP_SAVE_SESSION, QIcon::fromTheme(QIcon::ThemeIcon::DocumentSave), "Save");
@@ -136,7 +137,8 @@ inline void QTUI::createMenus() {
     mFileMenu->addSeparator();
     addMenuAction(mFileMenu, ShortcutId::APP_OPEN_SETTINGS, QIcon::fromTheme(QIcon::ThemeIcon::DocumentProperties), "Settings");
     addMenuAction(mFileMenu, ShortcutId::APP_EXIT, QIcon::fromTheme(QIcon::ThemeIcon::ApplicationExit), "Exit");
-    
+
+    // Edit menu
     addMenuAction(mEditMenu, ShortcutId::APP_UNDO, QIcon::fromTheme(QIcon::ThemeIcon::EditUndo));
     addMenuAction(mEditMenu, ShortcutId::APP_REDO, QIcon::fromTheme(QIcon::ThemeIcon::EditRedo));
     mEditMenu->addSeparator();
@@ -149,6 +151,12 @@ inline void QTUI::createMenus() {
     addMenuAction(mEditMenu, ShortcutId::CUELIST_SELECT_ALL, QIcon::fromTheme(QIcon::ThemeIcon::EditSelectAll), "Select all");
     addMenuAction(mEditMenu, ShortcutId::CUELIST_DESELECT_ALL, QIcon::fromTheme(QIcon::ThemeIcon::EditSelectAll), "Deselect all");
     
+    // Layout menu
+    QAction* a = new QAction("The vast emptiness beyond the realm of this universe", this);
+    a->setDisabled(true);
+    mLayoutMenu->addAction(a);
+
+    // Window menu
     addMenuAction(mWindowMenu, ShortcutId::APP_TOGGLE_SECONDARY_WINDOW, QIcon::fromTheme(QIcon::ThemeIcon::WindowNew), "Secondary window");
     
     // Not registered shortcuts
@@ -248,7 +256,7 @@ void QTUI::resizeEvent(QResizeEvent* event) {
 void QTUI::applyTheme(QString path) {
     QIcon::setThemeName("breeze-dark"); // dark themed icons
     Theme t(path);
-    qApp->setStyleSheet(t.mStylesheet);
+    qApp->setStyleSheet(t.getStyleSheet());
 }
 
 SecondaryWindow::SecondaryWindow() : QFrame() {

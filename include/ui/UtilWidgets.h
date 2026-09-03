@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "ui/Shortcut.h"
-#include "ui/AnimationClock.h"
+#include "ui/Animation.h"
 
 class FoldingWidget : public QFrame {
     Q_OBJECT

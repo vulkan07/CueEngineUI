@@ -12,11 +12,12 @@
 class Theme {
 private:
     std::map<QString, QString> mVars; // colors, border sizes etc..
+    QString mStylesheet;
 
     friend class ThemeManager;
 public:
-    QString mStylesheet;
     Theme(const QString& path);
+    QString getStyleSheet() const { return mStylesheet; }
 };
 
 // TODO this to swap themes and change colors live (maybe)

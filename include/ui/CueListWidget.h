@@ -7,7 +7,7 @@
 #include <array>
 #include <functional>
 
-#include "ui/AnimationClock.h"
+#include "ui/Animation.h"
 #include "ui/Shortcut.h"
 
 enum class CueListColumnTypes : int {
@@ -136,12 +136,14 @@ public:
     void animationTick(float dt);
 
     void repaintCue(int index);
+    void repaintCueRange(int start, int end);
 
     void updateSelectionRanges();
 
-    void selectAllCues(bool select);
-    void selectCuesInRange(int start, int end, bool select); // inclusive
-    void selectCueAtCursor(bool select);
+    void selectAllCues(bool select=true);
+    void selectCueRange(int start, int end, bool select=true);
+    void selectCueAtCursor(bool select=true);
+    void selectCueAtIndex(int index, bool select=true);
 
 public slots:
     ;

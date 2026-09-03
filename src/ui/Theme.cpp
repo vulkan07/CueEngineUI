@@ -9,7 +9,7 @@ Theme::Theme(const QString& path) {
     QFile f(path);
     
     if (!f.open(QFile::ReadOnly)) {
-        spdlog::error(std::string("(ui/Theme::Theme) Cannot read file: ")+path.toStdString());
+        spdlog::error(std::string("[ui/Theme::Theme] Cannot read file: ")+path.toStdString());
         return;
     }
     
@@ -34,7 +34,7 @@ Theme::Theme(const QString& path) {
 
         if (line == "#PALETTE") {
             if (paletteLine != -1) {
-                spdlog::error("(ui/Theme::Theme) #PALETTE appears more than once, when loading " + path.toStdString() );
+                spdlog::error("[ui/Theme::Theme] #PALETTE appears more than once, when loading " + path.toStdString() );
                 paletteLine = -2;
             }
             paletteLine = i;
@@ -42,7 +42,7 @@ Theme::Theme(const QString& path) {
         }
         if (line == "#ENDPALETTE") {
             if (paletteLine < 0) {
-                spdlog::error("(ui/Theme::Theme) #ENDPALETTE appears before #PALETTE, when loading " + path.toStdString() );
+                spdlog::error("[ui/Theme::Theme] #ENDPALETTE appears before #PALETTE, when loading " + path.toStdString() );
                 paletteLine = -2;
             }
             paletteLineEnd = i;

@@ -16,7 +16,7 @@ hl_fg2: #8f97ef
 hl_bg: #16192b
 hl_text: #7698ed
 
-dis_text: #c0c0c0
+dis_text: #bdbdbd
 dis_bg: #090909
 dis_border: #232323
 
@@ -197,6 +197,10 @@ QMenu::item {
 
 QMenu::item:selected {
     background: $hl_fg1$;
+}
+
+QMenu::item:disabled {
+    color: $dis_text$;
 }
 
 QMenu::icon {
@@ -425,7 +429,7 @@ FoldingWidget > QPushButton {
 }
 FoldingWidget > QLabel {
     font-size: 12.5pt;
-    font-weight: bold;
+    font-weight: 600;
 }
 FoldingWidget > #Line {
     background: $bg3$;

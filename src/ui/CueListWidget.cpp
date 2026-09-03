@@ -140,21 +140,21 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
     });
     mSelectCursorUpAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_UP, [=]{
         int index = this->standbyIndex();
-        this->selectCuesInRange(index-1, index, true);
+        this->selectCueRange(index-1, index, true);
         this->setStandbyIndex(index-1);
     });
     mSelectCursorDownAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_DOWN, [=]{
         int index = this->standbyIndex();
-        this->selectCuesInRange(index, index+1, true);
+        this->selectCueRange(index, index+1, true);
         this->setStandbyIndex(index+1);
     });
     mSelectCursorUntilHomeAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_HOME, [=]{
         int index = this->standbyIndex();
-        this->selectCuesInRange(0, index, true);
+        this->selectCueRange(0, index, true);
         this->setStandbyIndex(0);
     });
     mSelectCursorUntilEndAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_END, [=]{
-        this->selectCuesInRange(this->standbyIndex(), backend.getLength()-1, true);
+        this->selectCueRange(this->standbyIndex(), backend.getLength()-1, true);
         this->setStandbyIndex(backend.getLength()-1);
     });
     mPlayAction = createKeyboardAction(ShortcutId::CUELIST_PLAY_CURRENT_CUE, [=]{
@@ -269,17 +269,8 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
         xBasis += width + GAP_WIDTH;
     }
 
-    // "Cursor" at standby index
-    int w = 2;
-    double whalf = w/2;
-    QRectF rect = {whalf, mCursorPos-whalf+TOP_OFFSET, (double)width()-w, (double)ROW_HEIGHT+whalf};
-    QColor pen{180,180,255};
-    p.setPen(QPen(pen,w));
-    p.setBrush(QColor(100,100,255,30));
-    p.drawRect(rect);
-
     // Selection ranges 
-    w = 1;
+    int w = 1;
     p.setRenderHint(QPainter::Antialiasing, false); // sharper edges for selection rects
     p.setPen(QPen(QColor({220,220,250}),w));
     p.setBrush(QColor(250,250,255,25));
@@ -292,6 +283,24 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
         );
     }
     p.setRenderHint(QPainter::Antialiasing, true);
+
+    // "Cursor" at standby index
+    w = 2;
+    double whalf = w/2;
+    QRectF rect = {whalf, mCursorPos-whalf+TOP_OFFSET, (double)width()-w, (double)ROW_HEIGHT+whalf};
+    QPen pen;
+    QColor cursorColor ={180,180,255};
+    QColor cursorBgColor ={100,100,255,30};
+    if (this->mSelectedCues[mStandbyIndex])
+        cursorColor = {255,255,255};
+        cursorBgColor ={255,255,255,20};
+    pen.setColor(cursorColor);
+    pen.setWidth(w);
+
+    p.setPen(pen);
+    p.setBrush(cursorBgColor);
+    p.drawRect(rect);
+
     
     // Mouse cursor arrow thing
     QPainterPath path;
@@ -306,7 +315,7 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
     path.lineTo(p3);
     path.lineTo(p1);
     p.setPen(Qt::NoPen);
-    p.fillPath(path, pen);
+    p.fillPath(path, cursorColor);
 
     // Tiny 'shadow' below header
     // only shows up when it cuts throught text, improve readability
@@ -323,7 +332,20 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
 
 
 void CueListWidget::mousePressEvent(QMouseEvent* event) {
-    this->setStandbyIndex( (event->pos().y() - GAP_WIDTH - TOP_OFFSET) / ROW_TOTAL_H );
+    auto mod = event->modifiers();
+    int index = (event->pos().y() - GAP_WIDTH - TOP_OFFSET) / ROW_TOTAL_H;
+    
+    // Shift select up to the mouse click
+    if (mod.testFlag(Qt::ShiftModifier)) {
+        int start = this->standbyIndex();
+        bool select = !mod.testFlag(Qt::ControlModifier);
+
+        if (start < index)
+            this->selectCueRange(this->standbyIndex(), index, select);
+        else
+            this->selectCueRange(index, this->standbyIndex(), select);
+    }
+    this->setStandbyIndex( index );
 }
 
 //TODO remake this in a less ass way
@@ -430,20 +452,23 @@ void CueListWidget::animationTick(float dt) {
         mAnimHandle->stop();
 }
 
-void CueListWidget::selectCueAtCursor(bool selected) {
-    if (mSelectedCues[mStandbyIndex] == selected) return;
-    mSelectedCues[mStandbyIndex] = selected;
+void CueListWidget::selectCueAtIndex(int index, bool select) {
+    if (mSelectedCues[index] == select) return;
+    mSelectedCues[index] = select;
     this->updateSelectionRanges();
-    this->repaintCue(mStandbyIndex);
+    this->repaintCue(index);
 }
-
+void CueListWidget::selectCueAtCursor(bool select) {
+    this->selectCueAtIndex(this->mStandbyIndex, select);
+}
 void CueListWidget::selectAllCues(bool select) {
     std::fill(mSelectedCues.begin(), mSelectedCues.end(), select);
     this->updateSelectionRanges();
     this->repaint();
 }
 
-void CueListWidget::selectCuesInRange(int start, int end, bool select) {
+// start must be greater than end, or no selection happens
+void CueListWidget::selectCueRange(int start, int end, bool select) {
     if (start < 0) start = 0;
     if (end >= backend.getLength()) end = backend.getLength() - 1;
     if (start > end) return;
@@ -460,7 +485,16 @@ void CueListWidget::selectCuesInRange(int start, int end, bool select) {
 
 void CueListWidget::repaintCue(int index) {
     if (index < 0 || index >= backend.getLength()) return;
-    this->repaint(QRect(0, index*ROW_TOTAL_H + TOP_OFFSET - GAP_WIDTH-1, width(), ROW_TOTAL_H+1));
+    this->repaint(QRect(0, index*ROW_TOTAL_H + TOP_OFFSET - GAP_WIDTH-1, width(), ROW_TOTAL_H+3));
+}
+void CueListWidget::repaintCueRange(int start, int end) {
+    if (start < 0 || end >= backend.getLength() || start>end) return;
+    this->repaint(QRect(
+        0, 
+        start*ROW_TOTAL_H + TOP_OFFSET - GAP_WIDTH-1,
+        width(),
+        ROW_TOTAL_H * (end-start) +3
+    ));
 }
 
 // Split the selected cues into continuous ranges for rendering selection highlights

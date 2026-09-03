@@ -10,7 +10,7 @@ const ShortcutData* GetShortcutData(ShortcutId shortcutId) {
             return &e;
 
     if (shortcutId != ShortcutId::OTHER)
-        spdlog::error("(ui/Shortcut.cpp) Shortcut with ID {} was not defined in SHORTCUT_DATA" , static_cast<int>(shortcutId));
+        spdlog::error("[ui/Shortcut::GetShortcutData()] Shortcut with ID {} was not defined in SHORTCUT_DATA" , static_cast<int>(shortcutId));
     return nullptr;
 }
 

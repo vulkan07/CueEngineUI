@@ -1,5 +1,5 @@
 #include "ui/UtilWidgets.h"
-#include "ui/AnimationClock.h"
+#include "ui/Animation.h"
 #include "ui/QTUI.h"
 #include <spdlog/spdlog.h>
 
@@ -201,7 +201,7 @@ ShortcutWidget::ShortcutWidget(ShortcutId shortcutId, QWidget* parent)
                 mKeySequenceEdit2->setKeySequence(shortcuts[1]);
             }
             if (shortcuts.length() > 2) {
-                spdlog::error("Action {} has more than the allowed shortcuts (2)", static_cast<int>(shortcutId));
+                spdlog::error("[ui/ShortcutWidget] Action {} has more than the allowed shortcuts (2)", static_cast<int>(shortcutId));
             }
         }
     }

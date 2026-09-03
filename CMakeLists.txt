@@ -56,8 +56,8 @@ qt_add_executable(${APP_NAME}
     "include/ui/CueListWidget.h"
     "src/ui/CueListWidget.cpp"
 
-    "include/ui/AnimationClock.h"
-    "src/ui/AnimationClock.cpp"
+    "include/ui/Animation.h"
+    "src/ui/Animation.cpp"
 
     "include/backend/Backend.h"
     "src/backend/Backend.cpp"

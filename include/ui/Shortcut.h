@@ -6,7 +6,7 @@
 // To add a new shortcut which will appear in the settings,
 //  1. add an enum value for it in ShortcutId
 //  2. create shortcut data for it in SHORTCUT_DATA
-// (3. create a QAction with the widget that uses it, and register it via ShortcutManager::registerAction() )
+//  3. create a QAction object from the widget that uses it, and register it via ShortcutManager::registerAction()
 
 
 enum class ShortcutId {
