@@ -1,8 +1,11 @@
 #include "ui/PanelWidgets.h"
 #include "ui/QTUI.h"
+#include "ui/Waveform.h"
+#include "_asample.h"
 #include "backend/Backend.h"
 
 #include <QBoxLayout>
+#include <QSlider>
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QTime>
@@ -48,7 +51,6 @@ TestPanel::TestPanel(QWidget* parent) : BPanel(parent) {
     c4->setChecked(true);
 
     lcd->setSegmentStyle(QLCDNumber::Flat);
-    lcd->display(" 3:07");
     lcd->setFixedHeight(50);
 
     s->setSuffix("s");
@@ -86,14 +88,14 @@ StatusPanel::StatusPanel(QWidget* parent) :
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 
     this->mLCD->setDigitCount(8);
-    this->mLCD->setMinimumHeight(80);
+    this->mLCD->setObjectName("ClockLCD");
+    this->mLCD->setMaximumHeight(75);
     this->mLCD->setSegmentStyle(QLCDNumber::Flat);
     this->mLCD->display(QTime::currentTime().toString("hh:mm:ss"));
 
     this->mTitleLabel->setObjectName("StatusTitle");
     this->mTitleLabel->setAlignment(Qt::AlignCenter);
-    this->updateTitleSize();
-    mTitleLabel->setText("Goon Engine");
+    mTitleLabel->setText("projectname");
 
     this->updateTime();
 
@@ -113,41 +115,40 @@ void StatusPanel::updateTime() {
     });
 };
 
-void StatusPanel::updateTitleSize() {
-    /*
-    if (mTitleLabel->text().isEmpty()) return;
-
-    int w = mTitleLabel->width();
-    QFont f = mTitleLabel->font();
-    
-    QFontMetrics fm = mTitleLabel->fontMetrics();
-
-    // Shrink until it fits
-    int size = 500;
-    while (fm.boundingRect(mTitleLabel->text()).width() > w && size > 1) {
-        size--;
-        f.setPointSize(size);
-        std::cout << fm.boundingRect(mTitleLabel->text()).width() << std::endl;
-    
-    }
-
-    f.setPointSize(32);
-    mTitleLabel->setFont(f);*/
-}
-
 void StatusPanel::resizeEvent(QResizeEvent* event) {
-    this->updateTitleSize();
 }
 
 
 MiscPanel::MiscPanel(QWidget* parent) : BPanel(parent) {}
 
-PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {}
+
+PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {
+    WaveformData<asample_t>* data = new WaveformData<asample_t>;
+    data->samples.resize(audio_samples_len);
+    for (int i = 0; i < audio_samples_len; i++)
+        data->samples[i] = {(asample_t)audio_samples[i],0};
+    
+    WaveformViewportWidget* w = new WaveformViewportWidget(this);
+    layout()->addWidget(w);
+    w->setWaveformData(data);
+
+    QSlider* s = new QSlider(this);
+    layout()->addWidget(s);
+    s->setMinimum(10);
+    s->setMaximum(1000);
+    s->setOrientation(Qt::Horizontal);
+    s->setTickPosition(QSlider::TickPosition::NoTicks);
+
+    connect(s, &QSlider::valueChanged, this, [=](int value){
+        w->setScale(value/10);
+    });
+
+}
 
 CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
     srand(QDateTime::currentMSecsSinceEpoch());
     backend.addCue(std::make_unique<MediaCue>("I'm a media cue!", (rand()%200000), "this is a basic cue"));
-    for (int i = 0; i < 46; i++) 
+    for (int i = 0; i < 10'000; i++) 
         backend.addCue(std::make_unique<TextCue>("I'm a text cue!", "super cool description"));
     
 

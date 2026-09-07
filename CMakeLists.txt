@@ -10,6 +10,9 @@ set(CMAKE_AUTOMOC ON)
 #set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+#set(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra")
+#set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra")
+
 # Qt
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
@@ -59,13 +62,22 @@ qt_add_executable(${APP_NAME}
     "include/ui/Animation.h"
     "src/ui/Animation.cpp"
 
+    "include/ui/Waveform.h"
+    "src/ui/Waveform.cpp"
+
+    "include/ui/RenderLogger.h"
+    "src/ui/RenderLogger.cpp"
+
     "include/backend/Backend.h"
     "src/backend/Backend.cpp"
+
 
     "include/ui/Utils.h"
     "src/ui/Utils.cpp"
 
     "src/main.cpp"
+
+    "include/_asample.h"
 
 )
 

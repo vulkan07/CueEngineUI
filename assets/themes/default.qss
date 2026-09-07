@@ -393,8 +393,15 @@ QComboBox QAbstractItemView {
 }
 
 #StatusTitle {
-    font-size:24pt;
-    margin:12px;
+    font-size:22pt;
+    margin:4px;
+}
+
+#ClockLCD {
+    background: #0c0c0d;
+    border-radius: $border1$;
+    border: 2px solid $bg4$;
+    margin: 4px;
 }
 
 CueListHeader > QLabel {

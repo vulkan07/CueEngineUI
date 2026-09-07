@@ -34,7 +34,6 @@ private:
 public:
     explicit StatusPanel(QWidget* parent);
     void updateTime();
-    void updateTitleSize();
     void resizeEvent(QResizeEvent* event) override;
 };
 

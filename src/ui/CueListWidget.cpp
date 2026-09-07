@@ -1,6 +1,7 @@
 #include "ui/CueListWidget.h"
 #include "ui/Utils.h"
 #include "ui/QTUI.h"
+#include "ui/RenderLogger.h"
 #include "backend/Backend.h"
 
 #include <QHBoxLayout>
@@ -19,7 +20,7 @@ CueListHeader::CueListHeader(QWidget* parent) : QWidget(parent) {
     this->setLayout(layout);
     this->setFixedHeight(CueListWidget::ROW_HEIGHT+2);
 
-    for (int i = 0; i < CueListColumns.size(); i++) {
+    for (size_t i = 0; i < CueListColumns.size(); i++) {
     
         auto widget = new QLabel(CueListColumns[i].name, this);
         if (CueListColumns[i].resizeMode != ResizeMode::STRETCHING) {
@@ -35,11 +36,13 @@ CueListHeader::CueListHeader(QWidget* parent) : QWidget(parent) {
     this->setMouseTracking(true);
 }
 
+
+
 void CueListHeader::mousePressEvent(QMouseEvent* event) {
     int mouseX = event->pos().x();
 
     int x = 0;
-    for (int i = 0; i < CueListColumns.size(); i++) {
+    for (size_t i = 0; i < CueListColumns.size(); i++) {
         if ((mouseX > x-CueListHeader::GRAB_WIDTH) && (mouseX < x+CueListHeader::GRAB_WIDTH)) {
             mGrabbedIndex = i;
             mGrabOrigin = x;
@@ -226,7 +229,10 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
         for (int j = startRow; j < std::min(backend.getLength(), (size_t)endRow); j++) {
             
             cue = backend.getCue(j);
-            if (!cue) continue; // Just in case
+            if (!cue) // Just in case
+            {
+                RenderLogger::getInstance().log({RenderLogLevel::Error, "Cue to be rendered is null at index:", std::to_string(i)});
+            }
 
             // Background fill
             QRect rect {xBasis, yBasis, width, ROW_HEIGHT}; // the whole cell
