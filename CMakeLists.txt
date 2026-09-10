@@ -65,12 +65,14 @@ qt_add_executable(${APP_NAME}
     "include/ui/Waveform.h"
     "src/ui/Waveform.cpp"
 
+    "include/ui/DBMeter.h"
+    "src/ui/DBMeter.cpp"
+
     "include/ui/RenderLogger.h"
     "src/ui/RenderLogger.cpp"
 
     "include/backend/Backend.h"
     "src/backend/Backend.cpp"
-
 
     "include/ui/Utils.h"
     "src/ui/Utils.cpp"

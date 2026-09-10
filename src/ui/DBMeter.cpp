@@ -4,11 +4,11 @@
 #include <QPainter>
 
 DBMeter::DBMeter(QWidget* parent) : QWidget(parent) {
-    this->setMinimumWidth(32);
+    this->setMinimumWidth(24);
     this->setMaximumWidth(48);
-    this->setMinimumHeight(96);
+    this->setMinimumHeight(80);
     this->setMaximumHeight(256);
-    this->setFixedWidth(40);
+    this->setFixedWidth(28);
 }
 
 void DBMeter::paintEvent(QPaintEvent* event) {
@@ -16,47 +16,71 @@ void DBMeter::paintEvent(QPaintEvent* event) {
     p.setRenderHint(QPainter::Antialiasing,true);
     p.setClipRegion(event->region());
 
+    constexpr float clip_threshold = 0.99;
+    constexpr float min_threshold = 0.05;
 
-    constexpr int gap = 6;
-    constexpr int gaphalf = gap/2;
+    constexpr int topsegmentHeight = 4;
+    constexpr int hgap = 2;
+    constexpr int hoffs = topsegmentHeight+hgap;
+    constexpr int wgap = 2;
+    constexpr int wgaphalf = wgap/2;
     int w = width();
     int h = height();
     float whalf = w/2;
-    int rectwidth = whalf-gap;
+    int rectwidth = whalf-wgaphalf;
 
-
-    // Frames
     p.setPen(this->frameColor);
     p.setRenderHint(QPainter::Antialiasing, false);
-    p.drawRect(0,0,rectwidth,h-1);
-    p.drawRect(rectwidth+gaphalf,0,rectwidth,h-1);
+    // Top (clipping) indicators
+    p.drawRect(0,0,rectwidth,topsegmentHeight);
+    p.drawRect(rectwidth+wgap,0,rectwidth-1,topsegmentHeight);
+    // Bar frames
+    p.drawRect(0,hoffs,rectwidth,h-1-hoffs);
+    p.drawRect(rectwidth+wgap,hoffs,rectwidth-1,h-1-hoffs);
+
+    // Clipping indicator fills
+    p.setBrush({255,30,30});
+    p.setPen({255,150,150});
+    if (mLevelL >= clip_threshold)
+        p.drawRect(0,0,rectwidth,topsegmentHeight);
+    if (mLevelR >= clip_threshold)
+        p.drawRect(rectwidth+wgap,0,rectwidth-1,topsegmentHeight);
 
     p.setRenderHint(QPainter::Antialiasing, true);
 
     // Bars
-    QLinearGradient grad({0,(float)h-1}, {0,0});
-    grad.setStops({
-        { 0.0, {0  ,200,  0} },
-        { 0.7, {255,220,  0} },
-        { 1.0, {255,0  ,  0} }
-    });
+    QLinearGradient grad({0,(float)h-hoffs-1}, {0,0});
+    grad.setStops(this->gradient);
     p.setBrush(grad);
     p.setPen({});
 
-    float paintHeight = h-2;
-    float LH = .6 * paintHeight;
-    float RH = .2 * paintHeight;
-    p.drawRect(2,h-LH+1,rectwidth-3,LH-2);
-    p.drawRect(2+rectwidth+gaphalf,h-RH+1,rectwidth-3,RH-2);
+    float paintHeight = h-hoffs;
+    float LH = mLevelL * paintHeight;
+    float RH = mLevelR * paintHeight;
+    if (mLevelL >= min_threshold)
+        p.drawRect(
+            2,
+            h-LH+1,
+            rectwidth-3,
+            ceil(LH-2.0)
+        );
+    if (mLevelR >= min_threshold)
+        p.drawRect(
+            2+rectwidth+wgap,
+            h-RH+1,
+            rectwidth-4,
+            ceil(RH-2.0)
+        );
 }
 
-// Takes raw audio samples [-1,1]
+// Takes raw audio samples `[-1,1]`
+// DBFS conversion is handled by this method
 // For downsampling, supply the peak value of each subrange
-// DBFS conversion is handled by this
 void DBMeter::setLevels(float L, float R) {
     constexpr double floorDB = -60;
     mSampleL = L;
     mSampleR = R;
+    // Sample -> DBFS
     mLevelL = std::max(floorDB, 20*log10(std::abs(L)));
     mLevelR = std::max(floorDB, 20*log10(std::abs(R)));
     // Map Level to [0,1]
@@ -65,5 +89,5 @@ void DBMeter::setLevels(float L, float R) {
 
     this->repaint();
 }
-float DBMeter::getLevel_L() { return mSampleL;}
-float DBMeter::getLevel_R() { return mSampleR;}
+float DBMeter::getLevel_L() { return mLevelL; }
+float DBMeter::getLevel_R() { return mLevelR; }

@@ -13,9 +13,10 @@ public:
     float getLevel_L();
     float getLevel_R();
 
-    QColor frameColor{200,200,200};
+    QColor frameColor{100,100,100};
     QGradientStops gradient{
         { 0.0, {0  ,200,  0} },
+        { 0.5, {255,220,  0} },
         { 0.7, {255,220,  0} },
         { 1.0, {255,0  ,  0} }
     };
