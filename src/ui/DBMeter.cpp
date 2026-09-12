@@ -8,7 +8,7 @@ DBMeter::DBMeter(QWidget* parent) : QWidget(parent) {
     this->setMaximumWidth(48);
     this->setMinimumHeight(80);
     this->setMaximumHeight(256);
-    this->setFixedWidth(28);
+    this->setFixedWidth(34);
 }
 
 void DBMeter::paintEvent(QPaintEvent* event) {
@@ -31,20 +31,31 @@ void DBMeter::paintEvent(QPaintEvent* event) {
 
     p.setPen(this->frameColor);
     p.setRenderHint(QPainter::Antialiasing, false);
+
+
+    // Red frame color if clipping, with a decay timer
+    if (mLevelL >= clip_threshold || mLevelR >= clip_threshold)
+        clipDecayTimer = CLIP_DECAY;
+    if (clipDecayTimer > 0) {
+        p.setPen({255,30,30});
+        clipDecayTimer--;
+    }
+
     // Top (clipping) indicators
     p.drawRect(0,0,rectwidth,topsegmentHeight);
     p.drawRect(rectwidth+wgap,0,rectwidth-1,topsegmentHeight);
+
     // Bar frames
+
     p.drawRect(0,hoffs,rectwidth,h-1-hoffs);
     p.drawRect(rectwidth+wgap,hoffs,rectwidth-1,h-1-hoffs);
 
     // Clipping indicator fills
     p.setBrush({255,30,30});
-    p.setPen({255,150,150});
     if (mLevelL >= clip_threshold)
-        p.drawRect(0,0,rectwidth,topsegmentHeight);
+        p.drawRect(1,1,rectwidth-1,topsegmentHeight-1);
     if (mLevelR >= clip_threshold)
-        p.drawRect(rectwidth+wgap,0,rectwidth-1,topsegmentHeight);
+        p.drawRect(rectwidth+wgap+1,1,rectwidth-2,topsegmentHeight-1);
 
     p.setRenderHint(QPainter::Antialiasing, true);
 
@@ -78,11 +89,20 @@ void DBMeter::paintEvent(QPaintEvent* event) {
 // For downsampling, supply the peak value of each subrange
 void DBMeter::setLevels(float L, float R) {
     constexpr double floorDB = -60;
-    mSampleL = L;
-    mSampleR = R;
+    
+    if (mSmoothing) {
+        mSampleL_old = mSampleL;
+        mSampleR_old = mSampleR;
+        mSampleL = (mSampleL+mSampleL_old+L)/3;
+        mSampleR = (mSampleR+mSampleR_old+R)/3;
+    } else {
+        mSampleL = (mSampleL+L)/2;
+        mSampleR = (mSampleR+R)/2;
+    }
+
     // Sample -> DBFS
-    mLevelL = std::max(floorDB, 20*log10(std::abs(L)));
-    mLevelR = std::max(floorDB, 20*log10(std::abs(R)));
+    mLevelL = std::max(floorDB, 20*log10(std::abs(mSampleL)));
+    mLevelR = std::max(floorDB, 20*log10(std::abs(mSampleR)));
     // Map Level to [0,1]
     mLevelL = (mLevelL - floorDB) / (0.0f - floorDB);
     mLevelR = (mLevelR - floorDB) / (0.0f - floorDB);
@@ -91,3 +111,6 @@ void DBMeter::setLevels(float L, float R) {
 }
 float DBMeter::getLevel_L() { return mLevelL; }
 float DBMeter::getLevel_R() { return mLevelR; }
+
+void DBMeter::setSmoothing(bool smoothing) {mSmoothing=smoothing;}
+bool DBMeter::smoothing() {return mSmoothing;}

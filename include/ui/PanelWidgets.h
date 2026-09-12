@@ -42,6 +42,7 @@ class PlayingPanel : public BPanel {
     Q_OBJECT
 public:
     explicit PlayingPanel(QWidget* parent);
+    uint64_t sample = 0; //TEST ONLY
 };
 
 

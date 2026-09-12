@@ -398,9 +398,9 @@ QComboBox QAbstractItemView {
 }
 
 #ClockLCD {
-    background: #0c0c0d;
+    background: #101012;
     border-radius: $border1$;
-    border: 2px solid $bg4$;
+    border: 2px solid #505050;
     margin: 4px;
 }
 

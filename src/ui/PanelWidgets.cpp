@@ -1,6 +1,7 @@
 #include "ui/PanelWidgets.h"
 #include "ui/QTUI.h"
 #include "ui/Waveform.h"
+#include "ui/DBMeter.h"
 #include "_asample.h"
 #include "backend/Backend.h"
 
@@ -21,7 +22,7 @@ BPanel::BPanel(QWidget* parent) : QFrame(parent) {
     layout->setContentsMargins(2,2,2,2);
     this->setLayout(layout);
     this->setMinimumWidth(240);
-    this->setMinimumHeight(200);
+    //this->setMinimumHeight(200);
 }
 
 TestPanel::TestPanel(QWidget* parent) : BPanel(parent) {
@@ -123,6 +124,7 @@ MiscPanel::MiscPanel(QWidget* parent) : BPanel(parent) {}
 
 
 PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {
+    // EXTREMELY temporary test code xdd
     WaveformData<asample_t>* data = new WaveformData<asample_t>;
     data->samples.resize(audio_samples_len);
     for (int i = 0; i < audio_samples_len; i++)
@@ -132,17 +134,46 @@ PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {
     layout()->addWidget(w);
     w->setWaveformData(data);
 
+    DBMeter* meter = new DBMeter(this);
+    layout()->addWidget(meter);
+
+    QTimer* timer = new QTimer(this); 
+    timer->setInterval(1000/144);
+    timer->start();
+    connect(timer, &QTimer::timeout, this, [=](){
+        this->sample += (48000/144);
+        if (sample > audio_samples_len)
+            sample = 0;
+        meter->setLevels(
+            (float)audio_samples[sample]/SAMPLE_MAX_VALUE*2,
+            (float)audio_samples[sample]/SAMPLE_MAX_VALUE*2
+        );
+    } );
+
+
+    /*
     QSlider* s = new QSlider(this);
     layout()->addWidget(s);
-    s->setMinimum(10);
+    s->setMinimum(1);
     s->setMaximum(1000);
     s->setOrientation(Qt::Horizontal);
     s->setTickPosition(QSlider::TickPosition::NoTicks);
 
+    QSlider* s2 = new QSlider(this);
+    layout()->addWidget(s2);
+    s2->setMinimum(1);
+    s2->setMaximum(audio_samples_len/4);
+    s2->setOrientation(Qt::Horizontal);
+    s2->setTickPosition(QSlider::TickPosition::NoTicks);
+
     connect(s, &QSlider::valueChanged, this, [=](int value){
-        w->setScale(value/10);
+        w->setScale(value);
     });
 
+    connect(s2, &QSlider::valueChanged, this, [=](int value){
+        w->setScroll(value);
+    });
+    */
 }
 
 CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
