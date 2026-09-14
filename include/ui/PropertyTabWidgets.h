@@ -4,6 +4,8 @@
 
 #include "backend/Cue.h"
 
+using namespace BBackend;
+
 class PropertyPage : public QWidget {
     Q_OBJECT
 protected:

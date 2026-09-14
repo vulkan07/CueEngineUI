@@ -12,8 +12,8 @@ enum class RenderLogLevel {
 };
 struct RenderLogMessage {
     RenderLogLevel level=RenderLogLevel::Info;
-    std::string persistentMessage=nullptr;
-    std::string data=nullptr;
+    std::string persistentMessage{};
+    std::string data{};
 };
 
 class RenderLogger {

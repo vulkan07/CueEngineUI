@@ -1,41 +1,66 @@
 #pragma once
 
-#include "backend/Cue.h"
+#include "backend/EventQueue.h"
+#include "backend/Session.h"
 
-#include <vector>
-#include <memory>
-#include <QObject>
+#include <spdlog/spdlog.h>
+#include <thread>
+#include <chrono>
 
-class Backend : public QObject {
-    Q_OBJECT
+namespace BBackend {
 
-private:
-    std::vector<std::unique_ptr<Cue>> mCues;
-    
-    std::vector<Cue> v;
+    enum class BackendState {
+        UNINITIALIZED=0,
+        INVALID,
+        READY,
+    };
 
-    Backend() : QObject() {}
+    class Backend {
+    private:
 
-public:
+        std::thread mThread;
+        Session mSession;
+        EventQueue mEventQueue;
+        BackendState mState = BackendState::UNINITIALIZED;
 
-    /* singleton */
-    static Backend& getInstance() {
-        static Backend backend;
-        return backend;
-    }
-    Backend(Backend const&) = delete;
-    void operator=(Backend const&) = delete;
-    /* singleton */
+        Backend(){
+            spdlog::set_level(spdlog::level::debug); //TMP
+            spdlog::debug("Backend constructor");
+
+            mThread = std::thread([this](){
+                this->init();
+                this->loop();
+            });
+        };
+
+        void init() {
+            spdlog::debug("Backend init begin");
+            mState=BackendState::INVALID;
+
+            mSession = Session();
+            mEventQueue = EventQueue();
+
+            mState=BackendState::READY;
+            spdlog::debug("Backend init end");
+        }
+
+        void loop(){
+            while (true) {
+                mEventQueue.process();
+            }
+        };
 
 
-    //
-    void addCue(std::unique_ptr<Cue> cue);
-    // returns nullptr if index is invalid
-    Cue* getCue(int index);
-    // returns the internal list of cues
-    const std::vector<std::unique_ptr<Cue>>& getCues() const;
-    // returns the number of cues
-    size_t getLength();
+    public:
+        // Singleton //
+        static Backend& getInstance() {
+            static Backend backend;
+            return backend;
+        }
+        Backend(Backend const&) = delete;
+        void operator=(Backend const&) = delete;
+
+
+    };
+
 };
-
-#define backend Backend::getInstance()

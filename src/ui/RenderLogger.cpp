@@ -7,7 +7,7 @@ RenderLogger::RenderLogger(): messages() {
 }
 
 void RenderLogger::log(RenderLogMessage msg) {
-    if (msg.persistentMessage=="")
+    if (msg.persistentMessage.empty())
         return;
 
     // already has message

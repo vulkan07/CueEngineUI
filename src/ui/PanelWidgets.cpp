@@ -178,9 +178,9 @@ PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {
 
 CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
     srand(QDateTime::currentMSecsSinceEpoch());
-    backend.addCue(std::make_unique<MediaCue>("I'm a media cue!", (rand()%200000), "this is a basic cue"));
-    for (int i = 0; i < 10'000; i++) 
-        backend.addCue(std::make_unique<TextCue>("I'm a text cue!", "super cool description"));
+    //backend.addCue(std::make_unique<MediaCue>("I'm a media cue!", (rand()%200000), "this is a basic cue"));
+    //for (int i = 0; i < 10'000; i++) 
+    //    backend.addCue(std::make_unique<TextCue>("I'm a text cue!", "super cool description"));
     
 
     this->layout()->setContentsMargins(0,0,0,0);

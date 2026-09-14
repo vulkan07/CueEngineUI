@@ -1,39 +1,36 @@
 #pragma once
 
-#include <QString>
+#include <cstdint>
+#include <string>
 
-enum class CueType {
-    TextCue,
-    MediaCue
-};
+namespace BBackend {
 
-class Cue {
-public:
-    QString mName;
-    QString mDescription;
+    enum class CueState : uint8_t {
+        INVALID=0,
+        STANDBY,
+        RUNNING,
+        ERROR,
+        PAUSED,
+    };
 
-    // in msec
-    uint mPreWait = 0;
-    uint mPostWait = 0;
+    class Cue {
 
-    Cue(const QString& name, const QString& description = "");
+    private:
+        std::string mName{};
+        std::string mDescription{};
+        uint16_t mId = 0; // 0 is invalid
+        CueState mState = CueState::INVALID;
 
-    virtual CueType getType() const = 0;
-    virtual ~Cue() = default;
-};
+    public:
 
-class MediaCue : public Cue {
-public:
-    CueType getType() const override {return CueType::MediaCue;}
+        Cue(uint16_t id){};
+        ~Cue(){};
 
-    uint mDuration = 0;
+        std::string name() const {return mName;}
+        std::string description() const {return mDescription;}
+        uint16_t id() const {return mId;}
 
-    MediaCue(const QString& name, uint _duration, const QString& description = "");
-};
-
-class TextCue : public Cue {
-public:
-    CueType getType() const override {return CueType::TextCue;}
-
-    TextCue(const QString& name, const QString& description = "");
-};
+        void setName(std::string& name);
+        void setDescription(std::string& desc);
+    };
+} // namespace BBackend
