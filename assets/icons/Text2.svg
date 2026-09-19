@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="20"
+   height="20"
+   viewBox="0 0 128 128"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   sodipodi:docname="Text2.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="2.65625"
+     inkscape:cx="64"
+     inkscape:cy="88.094118"
+     inkscape:window-width="1057"
+     inkscape:window-height="1044"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       d="m 71.258291,99.612013 q 0,3.432497 0.929633,5.506287 1.001144,2.0738 2.574369,3.21796 1.644736,1.07266 3.861554,1.43021 2.216818,0.35755 4.648167,0.35755 h 3.360982 v 6.14988 H 41.080963 v -6.14988 h 3.360982 q 2.431349,0 4.576657,-0.28604 2.216817,-0.35755 3.861553,-1.35869 1.644736,-1.00115 2.574369,-2.93193 1.001144,-2.00228 1.001144,-5.22024 V 19.019956 h -14.01601 q -3.217961,0 -5.434779,1.001143 -2.145308,0.929634 -3.575513,2.574369 -1.358695,1.644736 -2.073798,3.861554 -0.643592,2.145308 -0.929633,4.576657 l -0.786613,6.292902 H 22.059235 L 22.774338,11.72591 h 82.451322 l 0.7151,25.600671 H 98.360678 L 97.645575,31.033679 Q 97.359534,28.60233 96.644432,26.457022 95.929329,24.240204 94.570634,22.595468 93.211939,20.950733 90.995121,20.021099 88.778303,19.019956 85.488832,19.019956 H 71.258291 Z"
+       id="text1"
+       style="font-size:146.453px;font-family:'Droid Serif';-inkscape-font-specification:'Droid Serif, Normal';text-align:center;letter-spacing:0px;text-anchor:middle;stroke-width:21.2611;paint-order:stroke fill markers;fill:#ffffff;fill-opacity:1"
+       aria-label="T" />
+  </g>
+</svg>

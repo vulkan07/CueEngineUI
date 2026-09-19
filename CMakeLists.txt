@@ -14,7 +14,7 @@ set(CMAKE_AUTOUIC ON)
 #set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra")
 
 # Qt
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets SvgWidgets)
 
 # logging
 find_package(spdlog REQUIRED)
@@ -59,6 +59,9 @@ qt_add_executable(${APP_NAME}
     "include/ui/CueListWidget.h"
     "src/ui/CueListWidget.cpp"
 
+    "include/ui/PlayingCueWidget.h"
+    "src/ui/PlayingCueWidget.cpp"
+
     "include/ui/Animation.h"
     "src/ui/Animation.cpp"
 
@@ -67,6 +70,9 @@ qt_add_executable(${APP_NAME}
 
     "include/ui/DBMeter.h"
     "src/ui/DBMeter.cpp"
+
+    "include/ui/IconManager.h"
+    "src/ui/IconManager.cpp"
 
     "include/ui/RenderLogger.h"
     "src/ui/RenderLogger.cpp"
@@ -85,22 +91,19 @@ qt_add_executable(${APP_NAME}
 
 target_include_directories(${APP_NAME} PRIVATE "include")
 
-target_link_libraries(${APP_NAME} PRIVATE Qt6::Core Qt6::Widgets spdlog::spdlog)
+target_link_libraries(${APP_NAME} PRIVATE Qt6::Core Qt6::Widgets Qt6::SvgWidgets spdlog::spdlog)
 
 
-#FILE(GLOB Images assets/images/*) # doesnt work
-
-
-qt_add_resources(${APP_NAME} "resources"
-    FILES
-        assets/themes/default.qss
-        assets/images/splash.png
-        assets/images/app-icon.png
-        assets/images/spin-up.png
-        assets/images/spin-down.png
-        assets/images/spin-up-disabled.png
-        assets/images/spin-down-disabled.png
-        assets/images/check-on.png
-        assets/images/combo-down.png
-        assets/images/cross.png
+file(GLOB_RECURSE RESOURCE_FILES
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/assets/*"
 )
+
+qt_add_resources(${APP_NAME} "assets"
+    PREFIX "/assets/"
+    BASE "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+    FILES
+        ${RESOURCE_FILES}
+)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

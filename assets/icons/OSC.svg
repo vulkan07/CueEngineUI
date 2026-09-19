@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="20"
+   height="20"
+   viewBox="0 0 75 75"
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   stroke-miterlimit="1.5"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="OSC.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#1f1f1f"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showguides="true"
+     inkscape:zoom="25.139079"
+     inkscape:cx="6.4839288"
+     inkscape:cy="8.5922001"
+     inkscape:window-width="1914"
+     inkscape:window-height="1044"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2">
+    <sodipodi:guide
+       position="37.5,37.5"
+       orientation="1,0"
+       id="guide6"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="70.351071,47.258361"
+       orientation="0,-1"
+       id="guide7"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="23.709033,32.173471"
+       orientation="0,-1"
+       id="guide8"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <g
+     fill="none"
+     stroke="#ffffff"
+     stroke-width="4.17"
+     id="g2"
+     style="display:none">
+    <path
+       d="M 68.75,53.125 V 68.75 H 53.125 M 6.25,53.125 V 68.75 H 21.875 M 68.75,21.875 V 6.25 H 53.125 M 6.25,21.875 V 6.25 h 15.625"
+       id="path2" />
+  </g>
+  <g
+     id="g4"
+     transform="matrix(0.93413282,0,0,0.93413282,2.5851851,2.3619171)"
+     style="display:none"
+     sodipodi:insensitive="true">
+    <path
+       style="font-variation-settings:'opsz' 18.2, 'wght' 610;fill:none;stroke:#ffffff;stroke-width:5.39123;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;paint-order:stroke fill markers"
+       d="M 6.1355202,6.1355174 37.614481,34.682022 6.1355202,63.228526"
+       id="path3" />
+    <path
+       style="font-variation-settings:'opsz' 18.2, 'wght' 610;fill:none;stroke:#ffffff;stroke-width:5.65172;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;paint-order:stroke fill markers"
+       d="M 68.221047,68.749999 H 35.746391"
+       id="path4" />
+    <!--!Font Awesome Free v7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+  </g>
+  <g
+     id="g9"
+     sodipodi:insensitive="true"
+     style="display:none">
+    <rect
+       style="font-variation-settings:'opsz' 18.2, 'wght' 610;fill:none;stroke:#ffffff;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;paint-order:stroke fill markers"
+       id="rect4"
+       width="14.939896"
+       height="8.4609528"
+       x="30.030052"
+       y="60.311546" />
+    <path
+       id="rect4-6"
+       style="font-variation-settings:'opsz' 18.2, 'wght' 610;fill:none;stroke:#ffffff;stroke-width:4.5;stroke-linecap:round;stroke-dasharray:none;paint-order:stroke fill markers"
+       d="M 29.761132,50.595512 C 24.411384,39.552536 15.929516,44.398214 15.709471,27.701888 15.416562,5.4769184 37.499007,5.4769759 37.499007,5.4769759 c 0,0 21.789537,0 21.789537,22.2249121 0,16.605175 -8.742128,11.972426 -14.161256,22.893624 v 3.3937 H 29.761132 Z"
+       sodipodi:nodetypes="cscscccc" />
+    <path
+       style="font-variation-settings:'opsz' 18.2, 'wght' 610;fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;paint-order:stroke fill markers"
+       d="m 26.661384,23.137198 c 1.020113,-3.869051 3.57074,-5.951988 7.726136,-6.509341"
+       id="path8"
+       sodipodi:nodetypes="cc" />
+  </g>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:51.6142px;font-family:'Adwaita Sans';-inkscape-font-specification:'Adwaita Sans, @opsz=32,wght=642';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-variation-settings:'opsz' 32, 'wght' 642;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:5.80658;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;paint-order:stroke fill markers"
+     x="0.08074677"
+     y="46.513489"
+     id="text9"
+     transform="scale(0.88584811,1.1288617)"><tspan
+       sodipodi:role="line"
+       id="tspan9"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:51.6142px;font-family:'Adwaita Sans';-inkscape-font-specification:'Adwaita Sans, @opsz=32,wght=642';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-variation-settings:'opsz' 32, 'wght' 642;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:5.80658"
+       x="0.08074677"
+       y="46.513489">osc</tspan></text>
+</svg>

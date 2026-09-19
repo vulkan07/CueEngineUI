@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="20"
+   height="20"
+   viewBox="0 0 75 75"
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   stroke-miterlimit="1.5"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="Group.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#1f1f1f"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showguides="true"
+     inkscape:zoom="20.725375"
+     inkscape:cx="6.6826294"
+     inkscape:cy="11.869508"
+     inkscape:window-width="1914"
+     inkscape:window-height="1044"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g4" />
+  <g
+     fill="none"
+     stroke="#ffffff"
+     stroke-width="4.17"
+     id="g2"
+     sodipodi:insensitive="true"
+     style="display:inline">
+    <path
+       d="M 68.75,53.125 V 68.75 H 53.125 M 6.25,53.125 V 68.75 H 21.875 M 68.75,21.875 V 6.25 H 53.125 M 6.25,21.875 V 6.25 h 15.625"
+       id="path2" />
+  </g>
+  <g
+     id="g4"
+     transform="matrix(0.93413282,0,0,0.93413282,2.5851851,2.3619171)"
+     style="display:none">
+    <path
+       style="font-variation-settings:'opsz' 18.2, 'wght' 610;fill:none;stroke:#ffffff;stroke-width:8.02884;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;paint-order:stroke fill markers"
+       d="M 6.2500001,6.2500001 37.5,37.5 6.2500001,68.749999"
+       id="path3" />
+    <path
+       style="font-variation-settings:'opsz' 18.2, 'wght' 610;fill:none;stroke:#ffffff;stroke-width:8.07389;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;paint-order:stroke fill markers"
+       d="M 68.221047,68.749999 H 35.746391"
+       id="path4" />
+  </g>
+</svg>
