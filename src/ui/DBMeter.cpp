@@ -8,7 +8,6 @@ DBMeter::DBMeter(QWidget* parent) : QWidget(parent) {
     this->setMaximumWidth(48);
     this->setMinimumHeight(80);
     this->setMaximumHeight(256);
-    this->setFixedWidth(34);
 }
 
 void DBMeter::paintEvent(QPaintEvent* event) {
@@ -51,7 +50,8 @@ void DBMeter::paintEvent(QPaintEvent* event) {
     p.drawRect(rectwidth+wgap,hoffs,rectwidth-1,h-1-hoffs);
 
     // Clipping indicator fills
-    p.setBrush({255,30,30});
+    p.setBrush({255,255,255});
+    p.setPen({});
     if (mLevelL >= clip_threshold)
         p.drawRect(1,1,rectwidth-1,topsegmentHeight-1);
     if (mLevelR >= clip_threshold)

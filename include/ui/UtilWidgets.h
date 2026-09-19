@@ -22,7 +22,6 @@ class FoldingWidget : public QFrame {
     Q_OBJECT
 private:
     QWidget* mWidget;
-    QLabel* mLabel;
     QPushButton* mButton;
     AnimationHandle* mAnimHandle;
     float mCurrentPos;

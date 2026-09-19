@@ -37,6 +37,7 @@ class WaveformViewportWidget : public QWidget  {
 public:
     struct Playhead {
         enum Style{
+            PLAIN = 0,
             TOP_MARKER = 1,
             BOTTOM_MARKER = 2,
             LEFT_MARKER = 4,
@@ -79,6 +80,8 @@ public:
 
     void recomputeDisplayedWaveform();
     void updateMousePlayhead();
+
+    void setPlaybackPos(apos_t sample);
 private:
     bool mSingleSideWaveform = false;
     float mScale = 1;

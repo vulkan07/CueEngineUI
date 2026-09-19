@@ -2,6 +2,7 @@
 #include <spdlog/spdlog.h>
 #include <QGuiApplication>
 #include <QScreen>
+#include <string>
 
 AnimationClock::AnimationClock() : QObject(), mTimer(), mElapsedTimer() {
     
@@ -24,6 +25,7 @@ void AnimationClock::setFrameRate(int frameRate) {
     if (frameRate < 1)
         spdlog::warn("[ui/AnimationClock::setFrameRate()] Tried to set fps less than 1");
     
+    spdlog::info("[UI] fps="+std::to_string(frameRate));
     if (frameRate < MIN_FRAME_RATE) frameRate = MIN_FRAME_RATE;
     if (frameRate > MAX_FRAME_RATE) frameRate = MAX_FRAME_RATE;
 

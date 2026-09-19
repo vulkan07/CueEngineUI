@@ -7,6 +7,10 @@
 #include <QLCDNumber>
 #include <QTimer>
 #include <QTabWidget>
+#include <QSvgWidget>
+
+#include <qcontainerfwd.h>
+#include <vector>
 
 #include "ui/PropertyTabWidgets.h"
 #include "ui/CueListWidget.h"
@@ -19,11 +23,6 @@ public:
 };
 
 
-class TestPanel : public BPanel {
-    Q_OBJECT
-public:
-    explicit TestPanel(QWidget* parent);
-};
 
 
 class StatusPanel : public BPanel {
@@ -42,7 +41,6 @@ class PlayingPanel : public BPanel {
     Q_OBJECT
 public:
     explicit PlayingPanel(QWidget* parent);
-    uint64_t sample = 0; //TEST ONLY
 };
 
 
@@ -69,8 +67,36 @@ public:
 };
 
 
+class CueItemWidget : public QFrame {
+    Q_OBJECT
+public:
+    explicit CueItemWidget(QString cueType, QString displayName, QWidget* parent=nullptr);
+
+    void mousePressEvent(QMouseEvent* event) override;
+private:
+    QLabel* mLabel;
+    QSvgWidget* mSvgWidget;
+
+    QString mCueType;
+
+};
+
+// kk!
+class CuePikkerWidget : public QFrame {
+    Q_OBJECT
+public:
+    explicit CuePikkerWidget(QWidget* parent);
+private:
+    QLabel* mTitleLabel;
+    QFrame* mCuesFrame;
+
+    inline QWidget* constructCueCategory(QString name, std::vector<CueItemWidget*> widgets);
+};
+
 class MiscPanel : public BPanel {
     Q_OBJECT
 public:
     explicit MiscPanel(QWidget* parent);
+private:
+    CuePikkerWidget* mCuePicker;
 };

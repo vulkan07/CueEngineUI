@@ -15,9 +15,9 @@ public:
 
     QColor frameColor{100,100,100};
     QGradientStops gradient{
-        { 0.0, {0  ,200,  0} },
-        { 0.5, {255,220,  0} },
+        { 0.3, {0  ,200,  0} },
         { 0.7, {255,220,  0} },
+        { 0.8, {255,220,  0} },
         { 1.0, {255,0  ,  0} }
     };
 
@@ -41,6 +41,6 @@ private:
     float mSampleL_old=0;
     float mSampleR_old=0;
 
-    const int CLIP_DECAY = 10;
+    const int CLIP_DECAY = 20;
     int clipDecayTimer = 0;
 };

@@ -1,6 +1,9 @@
 #include "ui/UtilWidgets.h"
 #include "ui/Animation.h"
 #include "ui/QTUI.h"
+#include <qlabel.h>
+#include <qnamespace.h>
+#include <qstyle.h>
 #include <spdlog/spdlog.h>
 
 FoldingWidget::FoldingWidget(QWidget* parent)
@@ -12,22 +15,20 @@ FoldingWidget::FoldingWidget(QWidget* contentWidget, QWidget* parent)
     auto* layout = new QVBoxLayout();
     auto* barLayout = new QHBoxLayout();
     this->setLayout(layout);
-    layout->setContentsMargins(2,2,2,2);
+    layout->setContentsMargins(0,0,0,0);
+    layout->setSpacing(0);
     
     mButton = new QPushButton(this);
-    mButton->setFixedSize(26,26);
     connect(mButton, &QPushButton::pressed, this, [=]{this->setOpen(!this->isOpen());});
-    mLabel = new QLabel(this);
-    barLayout->addWidget(mLabel);
-    barLayout->addStretch();
     barLayout->addWidget(mButton);
     layout->addLayout(barLayout);
 
+    /*
     auto* line = new QFrame(this);
     line->setObjectName("Line");
     line->setFrameShape(QFrame::HLine);
     line->setFixedHeight(2);
-    layout->addWidget(line);
+    layout->addWidget(line);*/
 
     this->setWidget(contentWidget);
     this->setOpen(true),
@@ -57,10 +58,10 @@ QWidget* FoldingWidget::widget() {
     return mWidget;
 }
 void FoldingWidget::setTitle(const QString& title) {
-    mLabel->setText(title);
+    mButton->setText(title);
 }
 QString FoldingWidget::title() const {
-    return mLabel->text();
+    return mButton->text();
 }
 void FoldingWidget::setOpen(bool open) {
     if (open == mOpen) return;
@@ -70,7 +71,7 @@ void FoldingWidget::setOpen(bool open) {
     if (open && mWidget)
         this->setMaximumHeight(QWIDGETSIZE_MAX);
     else
-        this->setMaximumHeight(60);
+        this->setMaximumHeight(40);
 }
 bool FoldingWidget::isOpen() {
     return mOpen;

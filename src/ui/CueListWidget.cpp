@@ -114,6 +114,13 @@ QAction* CueListWidget::createKeyboardAction(ShortcutId shortcutId, std::functio
     return a;
 }
 
+
+// TODO for CueListWidget class:
+//
+//  Handle when there are no cues or there is an invalid state
+//  mSelectedCues.size() will be zero so any iteration or access will segfault by default
+//  Is there a better way than checking for size==0 every time mSelectedCues is accessed?
+
 CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scrollBar, QWidget* parent) 
     : QWidget(parent), header(header), vScrollBar(scrollBar), mAnimHandle(new AnimationHandle) {
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -133,6 +140,7 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
         this->setStandbyIndex(this->standbyIndex()+1);
     });
     mSelectAtCursorAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_CURRENT, [=]{
+        if (mSelectedCues.size()==0) return;
         this->selectCueAtCursor(!mSelectedCues[this->standbyIndex()]);
     });
     mSelectAllAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_ALL, [=]{
@@ -363,6 +371,7 @@ void CueListWidget::mousePressEvent(QMouseEvent* event) {
 
 //TODO remake this in a less ass way
 void CueListWidget::setStandbyIndex(int index) {
+    if (mSelectedCues.size()==0) return;
     int oldIndex = mStandbyIndex;
     mStandbyIndex = index;
     if (mStandbyIndex >= /*backend.getLength() BTODO*/ 1 || mStandbyIndex < 0) {
@@ -392,6 +401,7 @@ int CueListWidget::standbyIndex() {
 
 
 void CueListWidget::scrollToStandbyIndex() {
+    if (mSelectedCues.size()==0) return;
     constexpr int PADDING = 1*ROW_TOTAL_H;
 
     int i = this->standbyIndex();
@@ -466,15 +476,18 @@ void CueListWidget::animationTick(float dt) {
 }
 
 void CueListWidget::selectCueAtIndex(int index, bool select) {
+    if (mSelectedCues.size()==0) return;
     if (mSelectedCues[index] == select) return;
     mSelectedCues[index] = select;
     this->updateSelectionRanges();
     this->repaintCue(index);
 }
 void CueListWidget::selectCueAtCursor(bool select) {
+    if (mSelectedCues.size()==0) return;
     this->selectCueAtIndex(this->mStandbyIndex, select);
 }
 void CueListWidget::selectAllCues(bool select) {
+    if (mSelectedCues.size()==0) return;
     std::fill(mSelectedCues.begin(), mSelectedCues.end(), select);
     this->updateSelectionRanges();
     this->repaint();
@@ -482,6 +495,7 @@ void CueListWidget::selectAllCues(bool select) {
 
 // start must be greater than end, or no selection happens
 void CueListWidget::selectCueRange(int start, int end, bool select) {
+    if (mSelectedCues.size()==0) return;
     if (start < 0) start = 0;
     //if (end >= backend.getLength()) end = backend.getLength() - 1; //BTODO
     if (start > end) return;
@@ -497,10 +511,12 @@ void CueListWidget::selectCueRange(int start, int end, bool select) {
 }
 
 void CueListWidget::repaintCue(int index) {
+    if (mSelectedCues.size()==0) return;
     //if (index < 0 || index >= backend.getLength()) return; //BTODO
     this->repaint(QRect(0, index*ROW_TOTAL_H + TOP_OFFSET - GAP_WIDTH-1, width(), ROW_TOTAL_H+3));
 }
 void CueListWidget::repaintCueRange(int start, int end) {
+    if (mSelectedCues.size()==0) return;
     //if (start < 0 || end >= backend.getLength() || start>end) return; //BTODO
     this->repaint(QRect(
         0, 
@@ -512,6 +528,7 @@ void CueListWidget::repaintCueRange(int start, int end) {
 
 // Split the selected cues into continuous ranges for rendering selection highlights
 void CueListWidget::updateSelectionRanges() {
+    if (mSelectedCues.size()==0) return;
     int start = -1;
     mSelectionRanges.clear();
     //qDebug("---------------------");

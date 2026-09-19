@@ -2,6 +2,7 @@
 
 #include <QPaintEvent>
 #include <QPainter>
+#include <QStyleOption>
 
 #include <algorithm>
 
@@ -14,8 +15,11 @@ WaveformViewportWidget::WaveformViewportWidget(QWidget* parent) :
     this->setMouseTracking(true);
 
     //TEST
-    mPlayheadPlayback = {.color={225,0,0},.visible=false};
-    mPlayheadMouse = {.color={225,225,225,150},.visible=false};
+    mPlayheadPlayback = {.color={230,230,230,200},.style=Playhead::Style::PLAIN,.visible=false};
+    mPlayheadMouse = {.color={200,200,200,150},.visible=false};
+
+    // List order controls paint order too
+    mPlayheads.push_back(&mPlayheadPlayback);
     mPlayheads.push_back(&mPlayheadMouse);
 }
 
@@ -28,6 +32,7 @@ WaveformData<asample_t>& WaveformViewportWidget::getWaveformData(){
 
 
 void WaveformViewportWidget::recomputeDisplayedWaveform() {
+    if (!mWaveformData) return;
     int w = this->width();
     mDisplayedWaveform->samples.resize(w);
     int samples_per_px = std::max(1.0f, ((float)mWaveformData->samples.size() / w )-mScale);
@@ -91,91 +96,99 @@ void WaveformViewportWidget::resizeEvent(QResizeEvent* event) {
 }
 
 void WaveformViewportWidget::paintEvent(QPaintEvent* event){
-    if (!mWaveformData) return;
-    int w = this->width();
-    int h = this->height();
-    float h_half = h/2.0f;
-
     QPainter p(this);
-    p.setRenderHint(QPainter::Antialiasing,true);
-    p.setClipRegion(event->region());
 
-    bool singleSided = h <= 64 || mSingleSideWaveform;
+    if (mWaveformData) {
+        int w = this->width();
+        int h = this->height();
+        float h_half = h/2.0f;
 
-    // Note: separate regions are not supported this way, only left- and rightmost
-    // boundaries are, but this shouldnt be a significant bottlenec enough
-    int startPixel = event->region().boundingRect().left();
-    int endPixel = event->region().boundingRect().right();
-    for (int i = startPixel; i < endPixel; i++) {
-        unsigned char vlinear = mDisplayedWaveform->samples[i].valueLinear;
-        unsigned char vrms = mDisplayedWaveform->samples[i].valueRMS;
-        //p.setPen({vlinear+100,30,30});
-
-        // Linear line
-        p.setPen({250,30,30});
-        if (singleSided)
-            p.drawLine(i,h-vlinear*2,i,h);
-        else
-            p.drawLine(i,(h_half-vlinear),i,h_half+vlinear);
-
-        // RMS line
-        p.setPen({230,80,30, 255});
-        if (singleSided)
-            p.drawLine(i,h-vrms*2,i,h);
-        else
-            p.drawLine(i,(h_half-vrms),i,h_half+vrms);
-        
-    }
-
-    // Playheads
-    constexpr int triangleW = 3;
-    constexpr int triangleH = 4;
-    constexpr int HtriangleW = 8;
-    constexpr int HtriangleH = 7;
-    for (size_t i = 0; i < mPlayheads.size(); i++) {
-        if (!mPlayheads[i]->visible) continue;
-
-        int samples_per_px = std::max(1.0f, ((float)mWaveformData->samples.size() / w )-mScale);
-        apos_t pos = (mPlayheads[i]->position - mScroll) / samples_per_px;
-
-        p.setPen(mPlayheads[i]->color);
-        p.setBrush(mPlayheads[i]->color);
-        p.setRenderHint(QPainter::Antialiasing,false);
-        p.drawRect(pos-1,0,1,h);
         p.setRenderHint(QPainter::Antialiasing,true);
+        p.setClipRegion(event->region());
 
-        if (mPlayheads[i]->style & Playhead::Style::TOP_MARKER) {
-            QPolygon topTriangle;
-            topTriangle << QPoint(pos-triangleW,0) << QPoint(pos+triangleW,0) << QPoint(pos,triangleH);
-            p.drawConvexPolygon(topTriangle);
+        bool singleSided = h <= 75 || mSingleSideWaveform;
+
+        // Note: separate regions are not supported this way, only left- and rightmost
+        // boundaries are, but this shouldnt be a significant bottlenec enough
+        int startPixel = event->region().boundingRect().left();
+        int endPixel = event->region().boundingRect().right();
+        for (int i = startPixel; i < endPixel; i++) {
+            unsigned char vlinear = mDisplayedWaveform->samples[i].valueLinear;
+            unsigned char vrms = mDisplayedWaveform->samples[i].valueRMS;
+            //p.setPen({vlinear+100,30,30});
+
+            // Linear line
+            p.setPen({250,30,30});
+            if (singleSided)
+                p.drawLine(i,h-vlinear*2,i,h);
+            else
+                p.drawLine(i,(h_half-vlinear),i,h_half+vlinear);
+
+            // RMS line
+            p.setPen({230,80,30, 255});
+            if (singleSided)
+                p.drawLine(i,h-vrms*2,i,h);
+            else
+                p.drawLine(i,(h_half-vrms),i,h_half+vrms);
+            
         }
-        if (mPlayheads[i]->style & Playhead::Style::BOTTOM_MARKER) {
-            QPolygon bottomTriangle;
-            bottomTriangle << QPoint(pos-triangleW,h) << QPoint(pos+triangleW,h) << QPoint(pos,h-triangleH);
-            p.drawConvexPolygon(bottomTriangle);
+
+        // Playheads
+        constexpr int triangleW = 4;
+        constexpr int triangleH = 5;
+        constexpr int HtriangleW = 8;
+        constexpr int HtriangleH = 7;
+        for (size_t i = 0; i < mPlayheads.size(); i++) {
+            if (!mPlayheads[i]->visible) continue;
+
+            int samples_per_px = std::max(1.0f, ((float)mWaveformData->samples.size() / w )-mScale);
+            apos_t pos = (mPlayheads[i]->position - mScroll) / samples_per_px;
+
+            p.setPen(mPlayheads[i]->color);
+            p.setBrush(mPlayheads[i]->color);
+            p.setRenderHint(QPainter::Antialiasing,false);
+            p.drawRect(pos-1,0,1,h);
+            p.setRenderHint(QPainter::Antialiasing,true);
+
+            if (mPlayheads[i]->style & Playhead::Style::TOP_MARKER) {
+                QPolygon topTriangle;
+                topTriangle << QPoint(pos-triangleW,0) << QPoint(pos+triangleW,0) << QPoint(pos,triangleH);
+                p.drawConvexPolygon(topTriangle);
+            }
+            if (mPlayheads[i]->style & Playhead::Style::BOTTOM_MARKER) {
+                QPolygon bottomTriangle;
+                bottomTriangle << QPoint(pos-triangleW,h) << QPoint(pos+triangleW,h) << QPoint(pos,h-triangleH);
+                p.drawConvexPolygon(bottomTriangle);
+            }
+            if (mPlayheads[i]->style & Playhead::Style::RIGHT_MARKER) {
+                QPolygon rTriangle;
+                rTriangle << QPoint(pos,h/2-HtriangleW) << QPoint(pos,h/2+HtriangleW) << QPoint(pos+HtriangleH,h/2);
+                p.drawConvexPolygon(rTriangle);
+            }
+            if (mPlayheads[i]->style & Playhead::Style::LEFT_MARKER) {
+                QPolygon rTriangle;
+                rTriangle << QPoint(pos,h/2-HtriangleW) << QPoint(pos,h/2+HtriangleW) << QPoint(pos-HtriangleH,h/2);
+                p.drawConvexPolygon(rTriangle);
+            }
+        
         }
-        if (mPlayheads[i]->style & Playhead::Style::RIGHT_MARKER) {
-            QPolygon rTriangle;
-            rTriangle << QPoint(pos,h/2-HtriangleW) << QPoint(pos,h/2+HtriangleW) << QPoint(pos+HtriangleH,h/2);
-            p.drawConvexPolygon(rTriangle);
-        }
-        if (mPlayheads[i]->style & Playhead::Style::LEFT_MARKER) {
-            QPolygon rTriangle;
-            rTriangle << QPoint(pos,h/2-HtriangleW) << QPoint(pos,h/2+HtriangleW) << QPoint(pos-HtriangleH,h/2);
-            p.drawConvexPolygon(rTriangle);
-        }
-    
+
+        //center line
+        p.setRenderHint(QPainter::Antialiasing,false);
+        p.setPen({230,200,200});
+        if (singleSided)
+            p.drawLine(0,h-1,w,h-1);
+        else
+            p.drawLine(0,h_half,w,h_half);
     }
 
+    //// Draw qss style
 
-
-    //center line
-    p.setRenderHint(QPainter::Antialiasing,false);
-    p.setPen({255,220,220});
-    if (singleSided)
-        p.drawLine(0,h-1,w,h-1);
-    else
-        p.drawLine(0,h_half,w,h_half);
+    // Initialize the style option for a standard QWidget
+    QStyleOption opt;
+    opt.initFrom(this);
+    // Force Qt to draw the QSS background, borders, and margins
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
 void WaveformViewportWidget::setScale(float scale) {
@@ -190,6 +203,7 @@ float WaveformViewportWidget::getScale() {
 }
 
 void WaveformViewportWidget::scrollBy(int64_t n_samples) {
+    if (!mWaveformData) return;
 
     apos_t newScroll;
     float samples_per_px = std::max(1.0f, ((float)mWaveformData->samples.size() / width() )-mScale);
@@ -208,6 +222,7 @@ void WaveformViewportWidget::scrollBy(int64_t n_samples) {
     this->setScroll(newScroll);
 }
 void WaveformViewportWidget::setScroll(apos_t n_samples) {
+    if (!mWaveformData) return;
     if (mScroll == n_samples) return;
     mScroll = n_samples;
 
@@ -228,11 +243,19 @@ bool WaveformViewportWidget::isSingleSidedWaveform() {
 }
 
 void WaveformViewportWidget::updateMousePlayhead() {
+    if (!mWaveformData) return;
     int x = this->mapFromGlobal(QCursor::pos()).x();
     int samples_per_px = std::max(1.0f, ((float)mWaveformData->samples.size() / width() )-mScale);
     mPlayheadMouse.position = x*samples_per_px + mScroll;
 
     // Optimization Note: region restricted repaint could be used, but I couldn't be
     // bothered to compute the old and new playhead regions
+    this->repaint();
+}
+
+void WaveformViewportWidget::setPlaybackPos(apos_t sample) {
+    mPlayheadPlayback.position = sample;
+    mPlayheadPlayback.visible = true;
+
     this->repaint();
 }
