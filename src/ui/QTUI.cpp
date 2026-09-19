@@ -5,12 +5,20 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QDir>
+#include <QVariant>
 
 #include <iostream>
-#include <QVariant>
+#include <thread>
+#include <string>
+#include <spdlog/spdlog.h>
 
 
 QTUI::QTUI(QWidget* parent) : QFrame(parent) {
+    
+    std::stringstream ss;
+    ss << "UI Thread ID: 0x";
+    ss << std::hex << std::this_thread::get_id();
+    spdlog::info(ss.str());
 
     // Minimal splash screen image (QSplashScreen adds startup delay while this does not)
     // Disable with --nosplash

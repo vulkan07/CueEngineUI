@@ -6,6 +6,8 @@
 #include <spdlog/spdlog.h>
 #include <thread>
 #include <chrono>
+#include <sstream>
+#include <iostream>
 
 namespace BBackend {
 
@@ -37,8 +39,10 @@ namespace BBackend {
             spdlog::debug("Backend init begin");
             mState=BackendState::INVALID;
 
-            mSession = Session();
-            mEventQueue = EventQueue();
+            std::stringstream ss;
+            ss << "BACKEND Thread ID: 0x";
+            ss << std::hex << std::this_thread::get_id();
+            spdlog::info(ss.str());
 
             mState=BackendState::READY;
             spdlog::debug("Backend init end");

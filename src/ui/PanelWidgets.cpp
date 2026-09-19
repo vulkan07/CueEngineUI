@@ -1,9 +1,9 @@
 #include "ui/PanelWidgets.h"
+#include "ui/CueListWidget.h"
 #include "ui/QTUI.h"
-#include "ui/Waveform.h"
-#include "ui/DBMeter.h"
-#include "_asample.h"
-#include "backend/Backend.h"
+#include "ui/PlayingCueWidget.h"
+#include "ui/IconManager.h"
+#include "ui/UtilWidgets.h"
 
 #include <QBoxLayout>
 #include <QSlider>
@@ -13,66 +13,20 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QTextEdit>
+#include <QDrag>
+#include <QMimeData>
 
 #include <iostream>
 #include <chrono>
+#include <qboxlayout.h>
+#include <qwidget.h>
 
 BPanel::BPanel(QWidget* parent) : QFrame(parent) {
     auto* layout = new QVBoxLayout;
-    layout->setContentsMargins(2,2,2,2);
+    layout->setContentsMargins(4,4,4,4);
     this->setLayout(layout);
     this->setMinimumWidth(240);
-    //this->setMinimumHeight(200);
-}
-
-TestPanel::TestPanel(QWidget* parent) : BPanel(parent) {
-
-    QLabel* l = new QLabel("I'm a label", this);
-    QCheckBox* c = new QCheckBox("I'm a checkbox", this);
-    QCheckBox* c2 = new QCheckBox("I'm another checkbox!", this);
-    QCheckBox* c3 = new QCheckBox("almafa idk korte", this);
-    QCheckBox* c4 = new QCheckBox("balls 12345", this);
-    QSpinBox* s = new QSpinBox(this);
-
-    auto* btn1 = new QPushButton("I'M a button!", this);
-    auto* btn2 = new QPushButton("I'M a better button!", this);
-    auto* btn3 = new QPushButton("Balls", this);
-
-    btn2->setDisabled(true);
-
-    auto* lcd = new QLCDNumber(8,this);
-    auto* line = new QLineEdit("nigger",this);
-    auto* line2 = new QLineEdit("disabled nig",this);
-    auto* te = new QTextEdit(this);
-
-    line2->setDisabled(true);
-    c->setChecked(true);
-    c3->setDisabled(true);
-    c4->setDisabled(true);
-    c4->setChecked(true);
-
-    lcd->setSegmentStyle(QLCDNumber::Flat);
-    lcd->setFixedHeight(50);
-
-    s->setSuffix("s");
-
-    this->setMaximumWidth(500);
-
-    this->layout()->addWidget(btn1);
-    this->layout()->addWidget(btn2);
-    this->layout()->addWidget(btn3);
-
-    this->layout()->addWidget(l);
-    this->layout()->addWidget(c);
-    this->layout()->addWidget(c2);
-    this->layout()->addWidget(c4);
-    this->layout()->addWidget(te);
-    this->layout()->addWidget(c3);
-    this->layout()->addWidget(s);
-    this->layout()->addWidget(line);
-    this->layout()->addWidget(line2);
-    this->layout()->addWidget(lcd);
-
+    this->setMinimumHeight(200);
 }
 
 StatusPanel::StatusPanel(QWidget* parent) : 
@@ -120,23 +74,26 @@ void StatusPanel::resizeEvent(QResizeEvent* event) {
 }
 
 
-MiscPanel::MiscPanel(QWidget* parent) : BPanel(parent) {}
+MiscPanel::MiscPanel(QWidget* parent) : BPanel(parent) {
+    mCuePicker = new CuePikkerWidget(this);
+    layout()->addWidget(mCuePicker);
+    ((QVBoxLayout*)layout())->addStretch();
+}
 
 
 PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {
     // EXTREMELY temporary test code xdd
-    WaveformData<asample_t>* data = new WaveformData<asample_t>;
-    data->samples.resize(audio_samples_len);
-    for (int i = 0; i < audio_samples_len; i++)
-        data->samples[i] = {(asample_t)audio_samples[i],0};
+
+
+    PlayingCueWidget* w = new PlayingCueWidget(this);
+    layout()->addWidget(w);
     
+    /*
     WaveformViewportWidget* w = new WaveformViewportWidget(this);
     layout()->addWidget(w);
-    w->setWaveformData(data);
 
     DBMeter* meter = new DBMeter(this);
     layout()->addWidget(meter);
-
     QTimer* timer = new QTimer(this); 
     timer->setInterval(1000/144);
     timer->start();
@@ -149,7 +106,7 @@ PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {
             (float)audio_samples[sample]/SAMPLE_MAX_VALUE*2
         );
     } );
-
+    */
 
     /*
     QSlider* s = new QSlider(this);
@@ -219,12 +176,92 @@ PropertiesPanel::PropertiesPanel(QWidget* parent) : BPanel(parent) {
     
     //Temporary
     mTabWidget->setTabVisible(2, false); // !
-    mTabWidget->addTab(new TestPanel(this), "Testing stuff");
-
 
 }
 
 void PropertiesPanel::addPage(PropertyPage* page) {
     mPages.push_back(page);
     mTabWidget->addTab(page, page->getPageName());
+}
+
+inline QWidget* CuePikkerWidget::constructCueCategory(QString name, std::vector<CueItemWidget*> widgets) {
+    QWidget* w1 = new QWidget(this); 
+    w1->setLayout(new QVBoxLayout());
+    for (auto it = widgets.begin(); it < widgets.end(); it++)
+        w1->layout()->addWidget(*it);
+    FoldingWidget* f1 = new FoldingWidget(this);
+    f1->setWidget(w1);
+    f1->setTitle(name);
+    return f1;
+}
+
+CuePikkerWidget::CuePikkerWidget(QWidget* parent) : QFrame(parent) {
+    auto layout = new QVBoxLayout(this);
+    this->setLayout(layout);
+    layout->setContentsMargins(0,0,0,0);
+
+    mTitleLabel = new QLabel("Drag to add new cue", this);
+    mTitleLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(mTitleLabel);
+
+    mCuesFrame = new QFrame(this);
+    mCuesFrame->setObjectName("CuePickerFrame");
+    layout->addWidget(mCuesFrame);
+
+
+    auto frameLayout = new QVBoxLayout(mCuesFrame);
+    mCuesFrame->setLayout(frameLayout);
+    frameLayout->setContentsMargins(2,2,2,2);
+    frameLayout->setSpacing(5);
+
+    frameLayout->addWidget(constructCueCategory("General", {
+        new CueItemWidget("text","Text Cue"),
+        new CueItemWidget("command","Command Cue")
+    }));
+    frameLayout->addWidget(constructCueCategory("Media", {
+        new CueItemWidget("audio","Audio Cue"),
+        new CueItemWidget("video","Video Cue"),
+        new CueItemWidget("image","Image Cue")
+    }));
+    frameLayout->addWidget(constructCueCategory("Control", {
+        new CueItemWidget("index","Index Cue"),
+        new CueItemWidget("group","group Cue"),
+        new CueItemWidget("stopall","Stop All Cue"),
+    }));
+    frameLayout->addWidget(constructCueCategory("Integration", {
+        new CueItemWidget("midi","MIDI Cue"),
+        new CueItemWidget("osc","OSC Cue"),
+        new CueItemWidget("light","Lighting Cue"),
+    }));
+}
+
+void CueItemWidget::mousePressEvent(QMouseEvent* event){
+    auto* drag = new QDrag(this);
+    auto* mime = new QMimeData;
+    mime->setData("custom/new-cue", mCueType.toUtf8()); // payload is cueType name string
+    drag->setMimeData(mime);
+    drag->setPixmap(this->grab());
+
+    //QSizePolicy p = this->sizePolicy();
+    //p.setRetainSizeWhenHidden(true);
+    //this->setSizePolicy(p);
+    //this->hide();
+
+    drag->exec(Qt::MoveAction);
+
+    //this->show();
+}
+
+CueItemWidget::CueItemWidget(QString cueType, QString displayName, QWidget* parent) : QFrame(parent), mCueType(cueType) {
+    auto layout = new QHBoxLayout(this);
+    this->setLayout(layout);
+    layout->setContentsMargins(3,1,3,1);
+
+    mSvgWidget = new QSvgWidget(this);
+    mSvgWidget->load(IconManager::getIconPathForCueType(cueType));
+    mSvgWidget->setFixedSize(17,17);
+    layout->addWidget(mSvgWidget);
+
+    mLabel = new QLabel(displayName, this);
+    layout->addWidget(mLabel);
 }
