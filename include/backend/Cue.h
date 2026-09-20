@@ -23,6 +23,7 @@ namespace BBackend {
 
     public:
 
+        Cue(std::string name, std::string desc): mName(name), mDescription(desc) {};
         Cue(uint16_t id){};
         ~Cue(){};
 

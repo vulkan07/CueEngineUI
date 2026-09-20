@@ -1,6 +1,14 @@
 #pragma once
 
 #include <QTabWidget>
+#include <QComboBox>
+#include <QTimeEdit>
+#include <qlabel.h>
+#include <qlineedit.h>
+#include <qspinbox.h>
+#include <qsvgwidget.h>
+#include <qtextedit.h>
+#include <qwidget.h>
 
 #include "backend/Cue.h"
 
@@ -21,6 +29,17 @@ public:
     explicit CueGeneralPage(QWidget* parent);
     QString getPageName() override { return "Cue"; }
     bool supportsCue(Cue& cue) override;
+private:
+    QLabel* mCueIndexWidget;
+    QSvgWidget* mCueIconWidget;
+    QLineEdit* mCueNameWidget;
+    QTextEdit* mCueDescriptionWidget;
+    QComboBox* mCueNextActionWidget;
+    QTimeEdit* mCuePreWaitWidget;
+    QTimeEdit* mCuePostWaitWidget;
+
+    // For layout
+    QWidget* mTitleSplitter;
 };
 
 class TextCuePage : public PropertyPage {

@@ -223,7 +223,7 @@ inline void QTUI::createActions() {
         mSecondaryWindow->setVisible(mSecondaryWindowAction->isChecked());
     });
 
-    mAboutAppAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), QString("About")+APP_NAME, this);
+    mAboutAppAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), QString("About ")+APP_NAME, this);
     connect(mAboutAppAction, &QAction::triggered, this, [=]{
         AboutAppWidget w(this);
         w.exec();

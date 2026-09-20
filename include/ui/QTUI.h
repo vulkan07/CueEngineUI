@@ -16,6 +16,7 @@
 #include <QResizeEvent>
 #include <QSettings>
 #include <QShortcut>
+#include <qobject.h>
 
 
 const char* const APP_NAME = "Cue Engine";

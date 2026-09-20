@@ -14,6 +14,7 @@ const QMap<QString, QString> IconManager::cueTypeIconPaths = {
     {"midi","MIDI"},
     {"osc","OSC"},
     {"light","Light"},
+    {"timer","Clock"},
 };
 
 IconManager::IconManager() : QObject() {

@@ -1,6 +1,7 @@
 #include "ui/UtilWidgets.h"
 #include "ui/Animation.h"
 #include "ui/QTUI.h"
+#include <qboxlayout.h>
 #include <qlabel.h>
 #include <qnamespace.h>
 #include <qstyle.h>
@@ -218,8 +219,9 @@ SettingsShortcutsPage::SettingsShortcutsPage(QWidget* parent) : QWidget(parent) 
     this->layout()->addWidget(mScrollWidget);
 
     mScrollContent = new QWidget(mScrollWidget);
-    mScrollContent->setLayout(new QVBoxLayout);
-    mScrollContent->layout()->setSpacing(10);
+    QVBoxLayout* layout = new QVBoxLayout;
+    mScrollContent->setLayout(layout);
+    layout->setSpacing(10);
     mScrollWidget->setWidget(mScrollContent);
 
     // Auto-create a folding widget inside thes scroll area for each shortcut category
@@ -233,10 +235,11 @@ SettingsShortcutsPage::SettingsShortcutsPage(QWidget* parent) : QWidget(parent) 
         foldingWidget->setWidget(contentWidget);
         foldingWidget->setTitle(ShortcutCategoryNames[i]);
 
-        mScrollContent->layout()->addWidget(foldingWidget);
+        layout->addWidget(foldingWidget);
         mCategoryWidgets.push_back(foldingWidget);
     }
-    mScrollContent->layout()->addWidget(new QWidget(mScrollContent));
+    layout->addWidget(new QWidget(mScrollContent));
+    layout->addStretch();
 
     auto actions = ShortcutManager::getActions();
     for (auto i = actions.cbegin(), end = actions.cend(); i != end; ++i) {

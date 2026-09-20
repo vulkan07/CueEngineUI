@@ -1,5 +1,6 @@
 #include "ui/PanelWidgets.h"
 #include "ui/CueListWidget.h"
+#include "ui/PropertyTabWidgets.h"
 #include "ui/QTUI.h"
 #include "ui/PlayingCueWidget.h"
 #include "ui/IconManager.h"
@@ -19,6 +20,7 @@
 #include <iostream>
 #include <chrono>
 #include <qboxlayout.h>
+#include <qnamespace.h>
 #include <qwidget.h>
 
 BPanel::BPanel(QWidget* parent) : QFrame(parent) {
@@ -165,17 +167,21 @@ PropertiesPanel::PropertiesPanel(QWidget* parent) : BPanel(parent) {
 
     mTabWidget = new QTabWidget(this);
     
-    this->layout()->addWidget(mTabWidget);
+    auto* layout_old = this->layout();
+    if (layout_old) // should always exist
+        delete layout_old;
+    QBoxLayout* layout = new QHBoxLayout();
+    this->setLayout(layout);
 
-    auto* page = new IdkRandomPage(mTabWidget);
+    layout->addWidget(new CueGeneralPage(mTabWidget));
+    layout->addWidget(mTabWidget);
 
-    this->addPage(new CueGeneralPage(mTabWidget));
+
     this->addPage(new TextCuePage(mTabWidget));
-    this->addPage(page);
+    this->addPage(new IdkRandomPage(mTabWidget));
 
     
-    //Temporary
-    mTabWidget->setTabVisible(2, false); // !
+    //mTabWidget->setTabVisible(2, false);
 
 }
 
@@ -225,8 +231,9 @@ CuePikkerWidget::CuePikkerWidget(QWidget* parent) : QFrame(parent) {
     }));
     frameLayout->addWidget(constructCueCategory("Control", {
         new CueItemWidget("index","Index Cue"),
-        new CueItemWidget("group","group Cue"),
+        new CueItemWidget("group","Group Cue"),
         new CueItemWidget("stopall","Stop All Cue"),
+        new CueItemWidget("timer","Scheduled Cue"),
     }));
     frameLayout->addWidget(constructCueCategory("Integration", {
         new CueItemWidget("midi","MIDI Cue"),

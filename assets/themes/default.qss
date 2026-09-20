@@ -77,8 +77,6 @@ QLineEdit, QTextEdit {
     border: $border_w$ solid transparent;
 }
 
-QLineEdit {
-}
 
 QAbstractSpinBox:hover,
 QLineEdit:hover,
@@ -109,7 +107,7 @@ QAbstractSpinBox
 QAbstractSpinBox::up-button {
     border: $border_w$ solid transparent;
     padding: 4px;
-    right: 28px;
+    right: 2px;
     width: 12px;
     height: 12px;
     subcontrol-origin: border;
@@ -120,9 +118,8 @@ QAbstractSpinBox::up-button {
 
 QAbstractSpinBox::down-button {;
     border: $border_w$ solid transparent;
-    
-    right: 2px;
     padding: 4px;
+    right: 28px;
     width: 12px;
     height: 12px;
     subcontrol-origin: border;
@@ -184,18 +181,19 @@ QMenuBar::item:pressed {
 QMenu {
     font-size:10.2pt;
     background: $bg2$;
-    border: $border_w$ solid $bg4$;
+    border: $border_w$ solid #505050;
     border-radius: $border1$;
     padding: 0;
 }
 
 
 QMenu::item {
-    color: $text1$;
+    color: #e0e0e0;
     padding: 5px 11px 6px 15px;
 }
 
 QMenu::item:selected {
+    color: white;
     background: $hl_fg1$;
 }
 
@@ -371,6 +369,7 @@ QScrollBar::sub-page {
 QComboBox {
     padding: 2px 4px;
     background: $bg3$;
+    border-radius: $border1$;
     border: $border_w$ solid $bg4$;
 }
 QComboBox:hover,
@@ -487,8 +486,12 @@ PlayingCueWidget QSplitter {
     font-weight: bold;
     background: #101012;
     border-radius: 0;
-    border: 1px solid #60c050;
-    font-size: 13pt;
+    border: 1px solid #505050;
+    font-size: 12pt;
+}
+#PlayingCueIcon {
+    border: 1px solid #505050;
+    border-radius: 0;
 }
 #PlayingCueDescription {
     background: transparent;
@@ -548,4 +551,24 @@ CueItemWidget > QLabel {
 CueItemWidget:hover {
     border-color: $hl_fg2$;
     background: $hl_bg$;
+}
+
+#PropsPageTitle {
+    font-size: 13pt;
+}
+#PropsCueTitle {
+    font-size: 12pt;
+    border-radius: 0;
+}
+#PropsCueIndex {
+    border-radius: 0;
+    border: 1px solid #505050;
+    font-size: 12pt;
+}
+#PropsCueIcon {
+    border: 1px solid #505050;
+    border-radius: 0;
+}
+#PropsCueDesc {
+    border-radius: 0;
 }

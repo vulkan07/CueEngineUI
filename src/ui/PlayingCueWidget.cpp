@@ -1,15 +1,19 @@
 #include "ui/PlayingCueWidget.h"
 
 #include "_asample.h"
+#include "ui/IconManager.h"
 
 #include <QBoxLayout>
 #include <QTimer>
 #include <qboxlayout.h>
 #include <qmargins.h>
+#include <qsvgwidget.h>
 #include <qwidget.h>
 
 PlayingCueWidget::PlayingCueWidget(QWidget* parent) : QWidget(parent) {
     constexpr QMargins NO_MARGIN{0,0,0,0}; // im lazy
+    constexpr int BOX_SIZE = 29; // for icon & index boxes
+    constexpr int SPACING = 2;
 
     mHSplitter = new QSplitter(Qt::Horizontal, this);
     mLeftSplitter = new QWidget(this);
@@ -25,6 +29,7 @@ PlayingCueWidget::PlayingCueWidget(QWidget* parent) : QWidget(parent) {
     mIndexWidget = new QLabel(this);
     mTitleWidget = new QLabel(this);
     mDescriptionWidget = new QTextEdit(this);
+    mIconWidget = new QSvgWidget(this);
 
     // Set object names for styling
     mTitleWidget->setObjectName("PlayingCueTitle");
@@ -47,6 +52,7 @@ PlayingCueWidget::PlayingCueWidget(QWidget* parent) : QWidget(parent) {
     QBoxLayout* layout = new QVBoxLayout();
     mLeftSplitter->setLayout(layout);
     layout->setContentsMargins(NO_MARGIN);
+    layout->setSpacing(SPACING);
     layout->addWidget(mTitleSplitter);
     layout->addWidget(mDescriptionWidget);
     
@@ -56,15 +62,26 @@ PlayingCueWidget::PlayingCueWidget(QWidget* parent) : QWidget(parent) {
     layout = new QHBoxLayout();
     mLCDSPlitter->setLayout(layout);
     layout->setContentsMargins(NO_MARGIN);
+    layout->setSpacing(SPACING);
     layout->addWidget(mRemainingWidget);
     layout->addWidget(mElapsedWidget);
     layout->addWidget(mDurationWidget);
     layout->addStretch();
 
+    // Wrap SVG widget in another widget to create padding
+    QWidget* iconHolder = new QWidget(this);
+    iconHolder->setLayout(new QHBoxLayout);
+    iconHolder->layout()->addWidget(mIconWidget);
+    iconHolder->layout()->setContentsMargins(4,4,4,4);
+    iconHolder->setFixedSize(BOX_SIZE,BOX_SIZE);
+    iconHolder->setObjectName("PlayingCueIcon");
+
     layout = new QHBoxLayout();
     mTitleSplitter->setLayout(layout);
     layout->setContentsMargins(NO_MARGIN);
+    layout->setSpacing(SPACING);
     layout->addWidget(mIndexWidget);
+    layout->addWidget(iconHolder);
     layout->addWidget(mTitleWidget);
 
     // Setup
@@ -75,13 +92,15 @@ PlayingCueWidget::PlayingCueWidget(QWidget* parent) : QWidget(parent) {
     for (auto it = v.begin(); it < v.end(); it++) {
         auto w = *it;
         w->setSegmentStyle(QLCDNumber::Flat);
-        w->setMinimumWidth(270);
+        w->setMinimumWidth(240);
         w->setMinimumHeight(40);
         w->setDigitCount(5);
         w->display("--:--");
     }
 
+
     // EXtra super duper temporary emulation code until backend exists xd
+    mIconWidget->load(IconManager::getIconPathForCueType("timer"));
     QTimer* timer = new QTimer(this); 
     timer->setInterval(1000/144);
     timer->start();
@@ -97,7 +116,7 @@ PlayingCueWidget::PlayingCueWidget(QWidget* parent) : QWidget(parent) {
         v = std::min(v,1.0f);
         
         mDBMeterWidget->setLevels(v,v);
-        mWaveformWidget->setPlaybackPos(sample);
+        //mWaveformWidget->setPlaybackPos(sample);
         int sec = sample/48000;
         int len = audio_samples_len/48000;
         mElapsedWidget->display("  :0"+QString::number(sec));
@@ -106,29 +125,31 @@ PlayingCueWidget::PlayingCueWidget(QWidget* parent) : QWidget(parent) {
     } );
 
     mLeftSplitter->setMinimumWidth(250);
+    mLeftSplitter->setMaximumWidth(420);
     mDBMeterWidget->setFixedWidth(30);
 
 
-    mIndexWidget->setFixedSize(30,30);
+    mIndexWidget->setFixedSize(BOX_SIZE,BOX_SIZE);
     mIndexWidget->setAlignment(Qt::AlignCenter);
 
+    mTitleWidget->setFixedHeight(BOX_SIZE);
     
     mHSplitter->setContentsMargins(0, 0, 0, 0);
     mLeftSplitter->setContentsMargins(0, 0, 4, 0);
     mMiddleSplitter->setContentsMargins(4, 0, 0, 0);
     mTitleSplitter->setContentsMargins(0, 0, 0, 0);
-    mLCDSPlitter->setContentsMargins(0, 0, 0, 0);
+    mLCDSPlitter->setContentsMargins(0, 0, 0, SPACING-1);
 
-    mHSplitter->setStretchFactor(0,0);
+    mHSplitter->setStretchFactor(0,1);
     mHSplitter->setStretchFactor(1,1);
     mHSplitter->setStretchFactor(2,2);
 
 
     //TEST
 
-    mTitleWidget->setText("Ridiculously long cue title mmm");
+    mTitleWidget->setText("Cue title 123");
 
-    mDescriptionWidget->setText("SuperCoolDesc\nasdasd\nasdasd2");
+    mDescriptionWidget->setText("start when balls123 idk almafa\ncool description\n\nparallelepiped");
     mIndexWidget->setText("1");
 
     

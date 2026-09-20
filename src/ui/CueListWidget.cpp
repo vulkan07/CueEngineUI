@@ -12,6 +12,18 @@
 #include <QTime>
 
 #include <algorithm>
+#include <qobject.h>
+#include <vector>
+
+
+// TEMPORARY until backend xd
+std::vector<Cue*> TMPcues = {
+    new Cue("Title","balls"),
+    new Cue("Cue 1","balls"),
+    new Cue("Cue 2","balls+"),
+    new Cue("Cue 3","balls-"),
+    new Cue("Cue 4","balls%"),
+};
 
 CueListHeader::CueListHeader(QWidget* parent) : QWidget(parent) {
     auto* layout = new QHBoxLayout(this);
@@ -205,6 +217,7 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
     //// BTODO implement an update callback function when cues change in backend  -->
     //this->setFixedHeight((backend.getLength()+2) * ROW_TOTAL_H + TOP_OFFSET); 
     //this->mSelectedCues.resize(backend.getLength(), false);
+    this->mSelectedCues.resize(TMPcues.size(), false);
     //mSelectedCues.push_back(false); //TEMPORARY
     ////
 }
@@ -235,10 +248,10 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
         auto column = CueListColumns[i];
         yBasis = startRow*ROW_TOTAL_H + TOP_OFFSET;
 
-        /*
-        for (int j = startRow; j < std::min(backend.getLength(), (size_t)endRow); j++) {
+        
+        for (int j = startRow; j < std::min(TMPcues.size(), (size_t)endRow); j++) {
             
-            cue = backend.getCue(j);
+            cue = TMPcues.at(j);
             if (!cue) // Just in case
             {
                 RenderLogger::getInstance().log({RenderLogLevel::Error, "Cue to be rendered is null at index:", std::to_string(i)});
@@ -258,19 +271,19 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
                     p.drawText(paddedRect, column.textAlignment, QString::number(j+1));
                     break;
                 case CueListColumnTypes::NAME:
-                    p.drawText(paddedRect, column.textAlignment, cue->mName);
+                    p.drawText(paddedRect, column.textAlignment, QString::fromStdString(cue->name()));
                     break;
                 case CueListColumnTypes::DESCRIPTION:
-                    p.drawText(paddedRect, column.textAlignment, cue->mDescription);
+                    p.drawText(paddedRect, column.textAlignment, QString::fromStdString(cue->description()));
                     break;
                 case CueListColumnTypes::PRE_WAIT:
                     break;
                 case CueListColumnTypes::DURATION:
-                    if (cue->getType() == CueType::MediaCue) {
-                        p.setFont(monoFont);
-                        p.drawText(paddedRect, column.textAlignment, stringFromDuration(static_cast<MediaCue*>(cue)->mDuration));
+                    //if (cue->getType() == CueType::MediaCue) {
+                        //p.setFont(monoFont);
+                        //p.drawText(paddedRect, column.textAlignment, stringFromDuration(static_cast<MediaCue*>(cue)->mDuration));
                         //p.fillRect(rect.adjusted(0,0, -width*(j*0.01) ,0), QBrush("#604040c0")); // TODO un-hardcode bg color    
-                    }
+                    //}
                     break;
                 case CueListColumnTypes::POST_WAIT:
                     p.setFont(monoFont);
@@ -283,7 +296,6 @@ void CueListWidget::paintEvent(QPaintEvent* event) {
             yBasis += ROW_TOTAL_H;
         }
         xBasis += width + GAP_WIDTH;
-        */
     }
 
     // Selection ranges 

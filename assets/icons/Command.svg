@@ -26,9 +26,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      showguides="true"
-     inkscape:zoom="19.70378"
-     inkscape:cx="12.662545"
-     inkscape:cy="10.480223"
+     inkscape:zoom="0.87079228"
+     inkscape:cx="179.72139"
+     inkscape:cy="14.354744"
      inkscape:window-width="1914"
      inkscape:window-height="1043"
      inkscape:window-x="0"
@@ -51,12 +51,12 @@
      transform="matrix(0.93413282,0,0,0.93413282,2.5851851,2.3619171)"
      style="display:inline">
     <path
-       style="font-variation-settings:'opsz' 18.2, 'wght' 610;fill:none;stroke:#ffffff;stroke-width:8.02883684;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;paint-order:stroke fill markers"
-       d="M 6.1355202,6.1355174 37.614481,34.682022 6.1355202,63.228526"
+       style="font-variation-settings:'opsz' 18.2, 'wght' 610;fill:none;stroke:#ffffff;stroke-width:9.23316237;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;paint-order:stroke fill markers"
+       d="M 11.228153,19.472197 42.707114,40.070741 11.228153,60.669285"
        id="path3" />
     <path
-       style="font-variation-settings:'opsz' 18.2, 'wght' 610;fill:none;stroke:#ffffff;stroke-width:8.02884;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;paint-order:stroke fill markers"
-       d="M 66.96516,62.187859 H 34.490504"
+       style="font-variation-settings:'opsz' 18.2, 'wght' 610;fill:none;stroke:#ffffff;stroke-width:9.23316;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;paint-order:stroke fill markers"
+       d="M 56.879786,64.320885 H 46.112787"
        id="path4" />
   </g>
 </svg>

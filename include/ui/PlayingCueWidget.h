@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QLCDNumber>
 #include <QSplitter>
+#include <qsvgwidget.h>
 #include <qwidget.h>
 
 class PlayingCueWidget : public QWidget {
@@ -28,6 +29,7 @@ private:
     QLCDNumber* mElapsedWidget;
     QLCDNumber* mDurationWidget;
     QLabel* mIndexWidget;
+    QSvgWidget* mIconWidget;
     QLabel* mTitleWidget;
     QTextEdit* mDescriptionWidget;
     
