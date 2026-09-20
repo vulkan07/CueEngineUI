@@ -174,11 +174,11 @@ inline void QTUI::createMenus() {
 inline void QTUI::createActions() {
     mNewAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentNew), "New", this);
     ShortcutManager::registerAction(ShortcutId::APP_NEW_SESSION, mNewAction);
-    connect(mNewAction, &QAction::triggered, this, [=]{});
+    connect(mNewAction, &QAction::triggered, this, [this]{});
 
     mOpenAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentOpen), "Open", this);
     ShortcutManager::registerAction(ShortcutId::APP_OPEN_SESSION, mOpenAction);
-    connect(mOpenAction, &QAction::triggered, this, [=]{
+    connect(mOpenAction, &QAction::triggered, this, [this]{
         // Mostly just a test for file dialogs
         QFileDialog dialog(this);
         dialog.setWindowTitle("Open Session");
@@ -198,39 +198,39 @@ inline void QTUI::createActions() {
 
     mSaveAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSave), "Save", this);
     ShortcutManager::registerAction(ShortcutId::APP_SAVE_SESSION, mSaveAction);
-    connect(mSaveAction, &QAction::triggered, this, [=]{});
+    connect(mSaveAction, &QAction::triggered, this, [this]{});
 
     mSaveAsAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), "Save as", this);
     ShortcutManager::registerAction(ShortcutId::APP_SAVE_SESSION_AS, mSaveAsAction);
-    connect(mSaveAsAction, &QAction::triggered, this, [=]{});
+    connect(mSaveAsAction, &QAction::triggered, this, [this]{});
 
     mSettingsAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentProperties), "Settings", this);
     ShortcutManager::registerAction(ShortcutId::APP_OPEN_SETTINGS, mSettingsAction);
-    connect(mSettingsAction, &QAction::triggered, this, [=]{
+    connect(mSettingsAction, &QAction::triggered, this, [this]{
         SettingsWidget(this).exec();
     });
 
     mExitAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::ApplicationExit), "Exit", this);
     ShortcutManager::registerAction(ShortcutId::APP_EXIT, mExitAction);
-    connect(mExitAction, &QAction::triggered, this, [=]{
+    connect(mExitAction, &QAction::triggered, this, [this]{
         qApp->exit();
     });
 
     mSecondaryWindowAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::WindowNew), "Secondary window", this);
     ShortcutManager::registerAction(ShortcutId::APP_TOGGLE_SECONDARY_WINDOW, mSecondaryWindowAction);
     mSecondaryWindowAction->setCheckable(true);
-    connect(mSecondaryWindowAction, &QAction::triggered, this, [=]{
+    connect(mSecondaryWindowAction, &QAction::triggered, this, [this]{
         mSecondaryWindow->setVisible(mSecondaryWindowAction->isChecked());
     });
 
     mAboutAppAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), QString("About ")+APP_NAME, this);
-    connect(mAboutAppAction, &QAction::triggered, this, [=]{
+    connect(mAboutAppAction, &QAction::triggered, this, [this]{
         AboutAppWidget w(this);
         w.exec();
     });
 
     mAboutQtAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout), "About Qt", this);
-    connect(mAboutQtAction, &QAction::triggered, this, [=]{
+    connect(mAboutQtAction, &QAction::triggered, this, [this]{
         qApp->aboutQt();
     });
 }

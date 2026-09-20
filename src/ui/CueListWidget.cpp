@@ -139,70 +139,70 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
     this->setFocusPolicy(Qt::StrongFocus);
 
     // Keyboard shortcuts specific to this widget
-    mHomeAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_HOME, [=]{
+    mHomeAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_HOME, [this]{
         this->setStandbyIndex(0);
     });
-    mEndAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_END, [=]{
+    mEndAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_END, [this]{
         //this->setStandbyIndex(backend.getLength()-1); //BTODO
     });
-    mUpAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_UP, [=]{
+    mUpAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_UP, [this]{
         this->setStandbyIndex(this->standbyIndex()-1);
     });
-    mDownAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_DOWN, [=]{
+    mDownAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_DOWN, [this]{
         this->setStandbyIndex(this->standbyIndex()+1);
     });
-    mSelectAtCursorAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_CURRENT, [=]{
+    mSelectAtCursorAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_CURRENT, [this]{
         if (mSelectedCues.size()==0) return;
         this->selectCueAtCursor(!mSelectedCues[this->standbyIndex()]);
     });
-    mSelectAllAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_ALL, [=]{
+    mSelectAllAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_ALL, [this]{
         this->selectAllCues(true);
     });
-    mDeselectAllAction = createKeyboardAction(ShortcutId::CUELIST_DESELECT_ALL, [=]{
+    mDeselectAllAction = createKeyboardAction(ShortcutId::CUELIST_DESELECT_ALL, [this]{
         this->selectAllCues(false);
     });
-    mSelectCursorUpAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_UP, [=]{
+    mSelectCursorUpAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_UP, [this]{
         int index = this->standbyIndex();
         this->selectCueRange(index-1, index, true);
         this->setStandbyIndex(index-1);
     });
-    mSelectCursorDownAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_DOWN, [=]{
+    mSelectCursorDownAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_DOWN, [this]{
         int index = this->standbyIndex();
         this->selectCueRange(index, index+1, true);
         this->setStandbyIndex(index+1);
     });
-    mSelectCursorUntilHomeAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_HOME, [=]{
+    mSelectCursorUntilHomeAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_HOME, [this]{
         int index = this->standbyIndex();
         this->selectCueRange(0, index, true);
         this->setStandbyIndex(0);
     });
-    mSelectCursorUntilEndAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_END, [=]{
+    mSelectCursorUntilEndAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_END, [this]{
         //this->selectCueRange(this->standbyIndex(), backend.getLength()-1, true); //BTODO
         //this->setStandbyIndex(backend.getLength()-1);
     });
-    mPlayAction = createKeyboardAction(ShortcutId::CUELIST_PLAY_CURRENT_CUE, [=]{
+    mPlayAction = createKeyboardAction(ShortcutId::CUELIST_PLAY_CURRENT_CUE, [this]{
         // TODO cue action here
         this->setStandbyIndex(this->standbyIndex()+1);
     });
-    mPauseAction = createKeyboardAction(ShortcutId::CUELIST_PAUSE_CURRENT_CUE, [=]{
+    mPauseAction = createKeyboardAction(ShortcutId::CUELIST_PAUSE_CURRENT_CUE, [this]{
         // TODO cue action here
     });
-    mStopAction = createKeyboardAction(ShortcutId::CUELIST_STOP_CURRENT_CUE, [=]{
+    mStopAction = createKeyboardAction(ShortcutId::CUELIST_STOP_CURRENT_CUE, [this]{
         // TODO cue action here
     });
-    mDeleteSelectedAction = createKeyboardAction(ShortcutId::CUELIST_DELETE_SELECTED, [=]{
+    mDeleteSelectedAction = createKeyboardAction(ShortcutId::CUELIST_DELETE_SELECTED, [this]{
     });
-    mCopySelectedAction = createKeyboardAction(ShortcutId::CUELIST_COPY_SELECTED, [=]{
+    mCopySelectedAction = createKeyboardAction(ShortcutId::CUELIST_COPY_SELECTED, [this]{
     });
-    mCutSelectedAction = createKeyboardAction(ShortcutId::CUELIST_CUT_SELECTED, [=]{
+    mCutSelectedAction = createKeyboardAction(ShortcutId::CUELIST_CUT_SELECTED, [this]{
     });
-    mPasteSelectedAction = createKeyboardAction(ShortcutId::CUELIST_PASTE_SELECTED, [=]{
+    mPasteSelectedAction = createKeyboardAction(ShortcutId::CUELIST_PASTE_SELECTED, [this]{
     });
-    mDuplicateSelectedAction = createKeyboardAction(ShortcutId::CUELIST_DUPLICATE_SELECTED, [=]{
+    mDuplicateSelectedAction = createKeyboardAction(ShortcutId::CUELIST_DUPLICATE_SELECTED, [this]{
     });
-    mShiftUpSelectedAction = createKeyboardAction(ShortcutId::CUELIST_SHIFT_UP_SELECTED, [=]{
+    mShiftUpSelectedAction = createKeyboardAction(ShortcutId::CUELIST_SHIFT_UP_SELECTED, [this]{
     });
-    mShiftDownSelectedAction = createKeyboardAction(ShortcutId::CUELIST_SHIFT_DOWN_SELECTED, [=]{
+    mShiftDownSelectedAction = createKeyboardAction(ShortcutId::CUELIST_SHIFT_DOWN_SELECTED, [this]{
     });
 
     // Optimizations for high FPS rendering
@@ -212,7 +212,7 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
     this->setAutoFillBackground(false);
 
     connect(&AnimationClock::getInstance(), &AnimationClock::tick, this, &CueListWidget::animationTick);
-    connect(this->header, &CueListHeader::userResized, this, [=]{this->update();}); // Update widths if user resizes headers
+    connect(this->header, &CueListHeader::userResized, this, [this]{this->update();}); // Update widths if user resizes headers
 
     //// BTODO implement an update callback function when cues change in backend  -->
     //this->setFixedHeight((backend.getLength()+2) * ROW_TOTAL_H + TOP_OFFSET); 

@@ -20,7 +20,7 @@ FoldingWidget::FoldingWidget(QWidget* contentWidget, QWidget* parent)
     layout->setSpacing(0);
     
     mButton = new QPushButton(this);
-    connect(mButton, &QPushButton::pressed, this, [=]{this->setOpen(!this->isOpen());});
+    connect(mButton, &QPushButton::pressed, this, [this]{this->setOpen(!this->isOpen());});
     barLayout->addWidget(mButton);
     layout->addLayout(barLayout);
 
@@ -167,17 +167,17 @@ ShortcutWidget::ShortcutWidget(ShortcutId shortcutId, QWidget* parent)
     mKeySequenceEdit1->setFixedWidth(200);
     mKeySequenceEdit1->setClearButtonEnabled(true);
     mKeySequenceEdit1->setMaximumSequenceLength(1);
-    connect(mKeySequenceEdit1, &QKeySequenceEdit::keySequenceChanged, this, [=]{this->onShortcutModified(mKeySequenceEdit1);});
+    connect(mKeySequenceEdit1, &QKeySequenceEdit::keySequenceChanged, this, [this]{this->onShortcutModified(mKeySequenceEdit1);});
 
     mKeySequenceEdit2 = new QKeySequenceEdit(this);
     mKeySequenceEdit2->setFixedWidth(200);
     mKeySequenceEdit2->setClearButtonEnabled(true);
     mKeySequenceEdit2->setMaximumSequenceLength(1);
-    connect(mKeySequenceEdit2, &QKeySequenceEdit::keySequenceChanged, this, [=]{this->onShortcutModified(mKeySequenceEdit2);});
+    connect(mKeySequenceEdit2, &QKeySequenceEdit::keySequenceChanged, this, [this]{this->onShortcutModified(mKeySequenceEdit2);});
 
     mRemoveButton = new QPushButton(this);
     mRemoveButton->setFixedSize(24,24);
-    connect(mRemoveButton, &QPushButton::clicked, this, [=]{ // Button press clears both shortcuts
+    connect(mRemoveButton, &QPushButton::clicked, this, [this]{ // Button press clears both shortcuts
         this->mKeySequenceEdit1->setKeySequence({});
         this->mKeySequenceEdit2->setKeySequence({});
     });
@@ -327,6 +327,6 @@ AboutAppWidget::AboutAppWidget(QWidget* parent)
     layout->addWidget(l);
     layout->addWidget(btn);
 
-    connect(btn, &QPushButton::pressed, this, [=](){this->done(0);}); // hmm cursed
+    connect(btn, &QPushButton::pressed, this, [this](){this->done(0);}); // hmm cursed
 
 }

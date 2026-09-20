@@ -104,7 +104,7 @@ PlayingCueWidget::PlayingCueWidget(QWidget* parent) : QWidget(parent) {
     QTimer* timer = new QTimer(this); 
     timer->setInterval(1000/144);
     timer->start();
-    connect(timer, &QTimer::timeout, this, [=]{
+    connect(timer, &QTimer::timeout, this, [this]{
         static uint64_t sample = 0; //TEST ONLY
 
 

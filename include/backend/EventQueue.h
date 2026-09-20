@@ -30,7 +30,7 @@ class EventQueue {
 
         void process(){
             std::unique_lock<std::mutex> lock(mMutex);
-            //mCV.wait(lock, [=] { return mEventQueue.empty(); });
+            //mCV.wait(lock, [this] { return mEventQueue.empty(); });
         };
 
         void pushEvent(Event& event){

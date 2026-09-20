@@ -12,11 +12,11 @@ AnimationClock::AnimationClock() : QObject(), mTimer(), mElapsedTimer() {
     this->setFrameRate(fps);
 
     // Update fps when screen refresh rate changes
-    connect(screen, &QScreen::refreshRateChanged, this, [=](qreal fps){
+    connect(screen, &QScreen::refreshRateChanged, this, [this](qreal fps){
         this->setFrameRate(fps);
     });
 
-    connect(&mTimer, &QTimer::timeout, this, [=]{
+    connect(&mTimer, &QTimer::timeout, this, [this]{
         emit tick( mElapsedTimer.restart() / 1000.0f );
     });
 }

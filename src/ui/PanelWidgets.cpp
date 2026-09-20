@@ -99,7 +99,7 @@ PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {
     QTimer* timer = new QTimer(this); 
     timer->setInterval(1000/144);
     timer->start();
-    connect(timer, &QTimer::timeout, this, [=](){
+    connect(timer, &QTimer::timeout, this, [this](){
         this->sample += (48000/144);
         if (sample > audio_samples_len)
             sample = 0;
@@ -125,11 +125,11 @@ PlayingPanel::PlayingPanel(QWidget* parent) : BPanel(parent) {
     s2->setOrientation(Qt::Horizontal);
     s2->setTickPosition(QSlider::TickPosition::NoTicks);
 
-    connect(s, &QSlider::valueChanged, this, [=](int value){
+    connect(s, &QSlider::valueChanged, this, [this](int value){
         w->setScale(value);
     });
 
-    connect(s2, &QSlider::valueChanged, this, [=](int value){
+    connect(s2, &QSlider::valueChanged, this, [this](int value){
         w->setScroll(value);
     });
     */
@@ -158,7 +158,7 @@ CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
     this->layout()->addWidget(mHeaderWidget);
     this->layout()->addWidget(mScrollWidget);
 
-    QTimer::singleShot(0, [=]{mCueListWidget->setFocus();});
+    QTimer::singleShot(0, [this]{mCueListWidget->setFocus();});
 }
 
 
