@@ -67,12 +67,16 @@ QString FoldingWidget::title() const {
 void FoldingWidget::setOpen(bool open) {
     if (open == mOpen) return;
     mOpen = open;
-    if (mWidget)
-        mWidget->setVisible(open);
-    if (open && mWidget)
+
+    if (!mWidget) return;
+
+    mWidget->setVisible(open);
+    /*
+    if (open)
         this->setMaximumHeight(QWIDGETSIZE_MAX);
     else
         this->setMaximumHeight(40);
+    */
 }
 bool FoldingWidget::isOpen() {
     return mOpen;

@@ -23,6 +23,31 @@ std::vector<Cue*> TMPcues = {
     new Cue("Cue 2","balls+"),
     new Cue("Cue 3","balls-"),
     new Cue("Cue 4","balls%"),
+    new Cue("Title","balls"),
+    new Cue("Cue 1","balls"),
+    new Cue("Cue 2","balls+"),
+    new Cue("Cue 3","balls-"),
+    new Cue("Cue 4","balls%"),
+    new Cue("Title","balls"),
+    new Cue("Cue 1","balls"),
+    new Cue("Cue 2","balls+"),
+    new Cue("Cue 3","balls-"),
+    new Cue("Cue 4","balls%"),
+    new Cue("Title","balls"),
+    new Cue("Cue 1","balls"),
+    new Cue("Cue 2","balls+"),
+    new Cue("Cue 3","balls-"),
+    new Cue("Cue 4","balls%"),
+    new Cue("Title","balls"),
+    new Cue("Cue 1","balls"),
+    new Cue("Cue 2","balls+"),
+    new Cue("Cue 3","balls-"),
+    new Cue("Cue 4","balls%"),
+    new Cue("Title","balls"),
+    new Cue("Cue 1","balls"),
+    new Cue("Cue 2","balls+"),
+    new Cue("Cue 3","balls-"),
+    new Cue("Cue 4","balls%"),
 };
 
 CueListHeader::CueListHeader(QWidget* parent) : QWidget(parent) {
@@ -143,7 +168,7 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
         this->setStandbyIndex(0);
     });
     mEndAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_END, [this]{
-        //this->setStandbyIndex(backend.getLength()-1); //BTODO
+        this->setStandbyIndex(TMPcues.size()-1); //BTODO
     });
     mUpAction = createKeyboardAction(ShortcutId::CUELIST_MOVE_UP, [this]{
         this->setStandbyIndex(this->standbyIndex()-1);
@@ -177,8 +202,8 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
         this->setStandbyIndex(0);
     });
     mSelectCursorUntilEndAction = createKeyboardAction(ShortcutId::CUELIST_SELECT_END, [this]{
-        //this->selectCueRange(this->standbyIndex(), backend.getLength()-1, true); //BTODO
-        //this->setStandbyIndex(backend.getLength()-1);
+        this->selectCueRange(this->standbyIndex(), TMPcues.size()-1, true); //BTODO
+        this->setStandbyIndex(TMPcues.size()-1);
     });
     mPlayAction = createKeyboardAction(ShortcutId::CUELIST_PLAY_CURRENT_CUE, [this]{
         // TODO cue action here
@@ -215,10 +240,9 @@ CueListWidget::CueListWidget(CueListHeader* const header, QScrollBar* const scro
     connect(this->header, &CueListHeader::userResized, this, [this]{this->update();}); // Update widths if user resizes headers
 
     //// BTODO implement an update callback function when cues change in backend  -->
-    //this->setFixedHeight((backend.getLength()+2) * ROW_TOTAL_H + TOP_OFFSET); 
-    //this->mSelectedCues.resize(backend.getLength(), false);
+    //this->mSelectedCues.resize(TMPcues.size(), false);
     this->mSelectedCues.resize(TMPcues.size(), false);
-    //mSelectedCues.push_back(false); //TEMPORARY
+    this->setFixedHeight((TMPcues.size()+2) * ROW_TOTAL_H + TOP_OFFSET); 
     ////
 }
 
@@ -386,7 +410,7 @@ void CueListWidget::setStandbyIndex(int index) {
     if (mSelectedCues.size()==0) return;
     int oldIndex = mStandbyIndex;
     mStandbyIndex = index;
-    if (mStandbyIndex >= /*backend.getLength() BTODO*/ 1 || mStandbyIndex < 0) {
+    if (mStandbyIndex >= TMPcues.size() /*BTODO*/ || mStandbyIndex < 0) {
         mStandbyIndex = oldIndex;
         return;
     }
@@ -509,7 +533,7 @@ void CueListWidget::selectAllCues(bool select) {
 void CueListWidget::selectCueRange(int start, int end, bool select) {
     if (mSelectedCues.size()==0) return;
     if (start < 0) start = 0;
-    //if (end >= backend.getLength()) end = backend.getLength() - 1; //BTODO
+    if (end >= TMPcues.size()) end = TMPcues.size() - 1; //BTODO
     if (start > end) return;
 
     std::fill(mSelectedCues.begin() + start, mSelectedCues.begin() + end + 1, select);
@@ -524,12 +548,12 @@ void CueListWidget::selectCueRange(int start, int end, bool select) {
 
 void CueListWidget::repaintCue(int index) {
     if (mSelectedCues.size()==0) return;
-    //if (index < 0 || index >= backend.getLength()) return; //BTODO
+    if (index < 0 || index >= TMPcues.size()) return; //BTODO
     this->repaint(QRect(0, index*ROW_TOTAL_H + TOP_OFFSET - GAP_WIDTH-1, width(), ROW_TOTAL_H+3));
 }
 void CueListWidget::repaintCueRange(int start, int end) {
     if (mSelectedCues.size()==0) return;
-    //if (start < 0 || end >= backend.getLength() || start>end) return; //BTODO
+    if (start < 0 || end >= TMPcues.size() || start>end) return; //BTODO
     this->repaint(QRect(
         0, 
         start*ROW_TOTAL_H + TOP_OFFSET - GAP_WIDTH-1,

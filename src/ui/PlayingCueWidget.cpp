@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <qboxlayout.h>
 #include <qmargins.h>
+#include <qpaintdevice.h>
 #include <qsvgwidget.h>
 #include <qwidget.h>
 
@@ -102,13 +103,13 @@ PlayingCueWidget::PlayingCueWidget(QWidget* parent) : QWidget(parent) {
     // EXtra super duper temporary emulation code until backend exists xd
     mIconWidget->load(IconManager::getIconPathForCueType("timer"));
     QTimer* timer = new QTimer(this); 
-    timer->setInterval(1000/144);
+    timer->setInterval(1000/60);
     timer->start();
     connect(timer, &QTimer::timeout, this, [this]{
         static uint64_t sample = 0; //TEST ONLY
 
 
-        sample += (48000/144);
+        sample += (48000/60);
         if (sample > audio_samples_len)
             sample = 0;
 
@@ -116,7 +117,7 @@ PlayingCueWidget::PlayingCueWidget(QWidget* parent) : QWidget(parent) {
         v = std::min(v,1.0f);
         
         mDBMeterWidget->setLevels(v,v);
-        //mWaveformWidget->setPlaybackPos(sample);
+        mWaveformWidget->setPlaybackPos(sample);
         int sec = sample/48000;
         int len = audio_samples_len/48000;
         mElapsedWidget->display("  :0"+QString::number(sec));

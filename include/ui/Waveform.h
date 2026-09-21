@@ -53,7 +53,7 @@ public:
         apos_t position = 0;
     };
 
-    WaveformViewportWidget(QWidget* parent = nullptr);
+    explicit WaveformViewportWidget(QWidget* parent = nullptr);
     void paintEvent(QPaintEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
 
@@ -86,9 +86,13 @@ private:
     bool mSingleSideWaveform = false;
     float mScale = 1;
     apos_t mScroll = 0;
+    uint mSamplesPerPx = 0; // 0 == invalidw
+    bool mRecomputeFlag = true;
     std::vector<Playhead*> mPlayheads;
     Playhead mPlayheadPlayback;
     Playhead mPlayheadMouse;
     WaveformData<asample_t>* mWaveformData = nullptr;
     WaveformData<unsigned char>* mDisplayedWaveform; // To cache values on each resize event instead of each repaint
+
+    const int REPAINT_PADDING = 3;
 };

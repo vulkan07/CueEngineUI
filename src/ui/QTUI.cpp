@@ -12,6 +12,9 @@
 #include <string>
 #include <spdlog/spdlog.h>
 
+// TODO implement: prevent system from sleeping and disabling display on idle
+// could be invoked only if any cue requires it / running state or sth
+// Qt does not have a function for this, OS specific implementation needed
 
 QTUI::QTUI(QWidget* parent) : QFrame(parent) {
     

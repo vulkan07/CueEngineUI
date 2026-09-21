@@ -149,6 +149,7 @@ CueListPanel::CueListPanel(QWidget* parent) : BPanel(parent) {
     mScrollWidget = new QScrollArea(this);
     mCueListWidget = new CueListWidget(mHeaderWidget, mScrollWidget->verticalScrollBar(), this);
 
+    mScrollWidget->setObjectName("CueListScrollArea");
     mScrollWidget->setWidgetResizable(true);
     mScrollWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     mScrollWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);

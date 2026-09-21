@@ -40,7 +40,7 @@ static inline QWidget* labelled(const QString& text, QWidget* widget, int maxLab
 CueGeneralPage::CueGeneralPage(QWidget* parent) : PropertyPage(parent) {
     constexpr QMargins NO_MARGIN{0,0,0,0}; // im lazy
     constexpr int BOX_SIZE = 29; // for icon & index boxes
-    constexpr int SPACING = 2;
+    constexpr int SPACING = 3;
 
     this->setMaximumWidth(330);
     mCueIndexWidget = new QLabel(this);

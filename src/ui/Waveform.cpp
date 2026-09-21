@@ -5,6 +5,13 @@
 #include <QStyleOption>
 
 #include <algorithm>
+#include <cmath>
+#include <qdebug.h>
+#include <qregion.h>
+#include <spdlog/spdlog.h>
+
+// TODO: offload conversion between pixel positions and audio sample positions
+// in all functions here
 
 WaveformViewportWidget::WaveformViewportWidget(QWidget* parent) : 
     QWidget(parent), mDisplayedWaveform(new WaveformData<unsigned char>) {
@@ -36,7 +43,11 @@ void WaveformViewportWidget::recomputeDisplayedWaveform() {
     int w = this->width();
     mDisplayedWaveform->samples.resize(w);
     int samples_per_px = std::max(1.0f, ((float)mWaveformData->samples.size() / w )-mScale);
-    //qDebug()<<samples_per_px;
+
+    // Skip recompute when the function was called without actual state change
+    if (mSamplesPerPx != 0 && mSamplesPerPx == samples_per_px && !mRecomputeFlag)
+        return;
+    mSamplesPerPx = samples_per_px;
 
     float remap_factor = (float)this->height() / 2.0 / SAMPLE_MAX_VALUE;
 
@@ -68,6 +79,7 @@ void WaveformViewportWidget::recomputeDisplayedWaveform() {
         mDisplayedWaveform->samples[i] = {r_linear, r_rms};
     }
     //this->repaint();
+    mRecomputeFlag = false;
 }
 
 void WaveformViewportWidget::leaveEvent(QEvent* event) {
@@ -103,34 +115,40 @@ void WaveformViewportWidget::paintEvent(QPaintEvent* event){
         int h = this->height();
         float h_half = h/2.0f;
 
-        p.setRenderHint(QPainter::Antialiasing,true);
+        p.setRenderHint(QPainter::Antialiasing,false);
         p.setClipRegion(event->region());
 
         bool singleSided = h <= 75 || mSingleSideWaveform;
 
-        // Note: separate regions are not supported this way, only left- and rightmost
-        // boundaries are, but this shouldnt be a significant bottlenec enough
-        int startPixel = event->region().boundingRect().left();
-        int endPixel = event->region().boundingRect().right();
-        for (int i = startPixel; i < endPixel; i++) {
-            unsigned char vlinear = mDisplayedWaveform->samples[i].valueLinear;
-            unsigned char vrms = mDisplayedWaveform->samples[i].valueRMS;
-            //p.setPen({vlinear+100,30,30});
+        for (auto it = event->region().begin(); it < event->region().end(); it++) {
+            int startPixel = it->left();
+            int endPixel = std::min(it->right()+2, width()); // For partial repaints, an extension at the right bound is needed for some reason
+            //qDebug()<< "PAINT ["<<startPixel<<","<<endPixel<<"]  | playhead:"<<(mPlayheadMouse.position-mScroll)/mSamplesPerPx;
+            for (int i = startPixel; i < endPixel; i++) {
+                uint8_t vlinear = mDisplayedWaveform->samples[i].valueLinear;
+                uint8_t vrms = mDisplayedWaveform->samples[i].valueRMS;
+                //p.setPen({vlinear+100,30,30});
 
-            // Linear line
-            p.setPen({250,30,30});
-            if (singleSided)
-                p.drawLine(i,h-vlinear*2,i,h);
-            else
-                p.drawLine(i,(h_half-vlinear),i,h_half+vlinear);
+                // Linear line
+                p.setPen({180,20,20});
+                if (singleSided)
+                    p.drawLine(i,h-vlinear*2,i,h);
+                else
+                    p.drawLine(i,(h_half-vlinear),i,h_half+vlinear);
 
-            // RMS line
-            p.setPen({230,80,30, 255});
-            if (singleSided)
-                p.drawLine(i,h-vrms*2,i,h);
-            else
-                p.drawLine(i,(h_half-vrms),i,h_half+vrms);
-            
+                // RMS line
+                p.setPen({230,30,30});
+                if (singleSided)
+                    p.drawLine(i,h-vrms*2,i,h);
+                else
+                    p.drawLine(i,(h_half-vrms),i,h_half+vrms);
+
+                // partial repaint debug
+                //if(startPixel!=0) {
+                //    p.setPen({255,255,0,180});
+                //    p.drawLine(i,0,i,h_half+vrms);
+                //}
+            }
         }
 
         // Playheads
@@ -195,8 +213,10 @@ void WaveformViewportWidget::setScale(float scale) {
     if (mScale == scale) return;
     if (mScale < 1) mScale = 1;
     this->mScale = scale;
+    this->mRecomputeFlag = true;
     this->updateMousePlayhead();
     this->recomputeDisplayedWaveform();
+    this->repaint();
 }
 float WaveformViewportWidget::getScale() {
     return mScale;
@@ -226,8 +246,10 @@ void WaveformViewportWidget::setScroll(apos_t n_samples) {
     if (mScroll == n_samples) return;
     mScroll = n_samples;
 
+    this->mRecomputeFlag = true;
     this->updateMousePlayhead();
     this->recomputeDisplayedWaveform();
+    this->repaint();
 }
 apos_t WaveformViewportWidget::getScroll() {
     return mScroll;
@@ -246,16 +268,27 @@ void WaveformViewportWidget::updateMousePlayhead() {
     if (!mWaveformData) return;
     int x = this->mapFromGlobal(QCursor::pos()).x();
     int samples_per_px = std::max(1.0f, ((float)mWaveformData->samples.size() / width() )-mScale);
+    int oldX = (float)(mPlayheadMouse.position-mScroll)/samples_per_px;
     mPlayheadMouse.position = x*samples_per_px + mScroll;
+
 
     // Optimization Note: region restricted repaint could be used, but I couldn't be
     // bothered to compute the old and new playhead regions
-    this->repaint();
+    this->repaint(
+        QRegion(   x-REPAINT_PADDING,0,1+REPAINT_PADDING*2,height()) |
+        QRegion(oldX-REPAINT_PADDING,0,1+REPAINT_PADDING*2,height())
+    );
 }
 
 void WaveformViewportWidget::setPlaybackPos(apos_t sample) {
+    int x = (sample-mScroll)/mSamplesPerPx;
+    int oldX = (mPlayheadPlayback.position-mScroll)/mSamplesPerPx;
+
     mPlayheadPlayback.position = sample;
     mPlayheadPlayback.visible = true;
 
-    this->repaint();
+    this->repaint(
+        QRegion(   x-REPAINT_PADDING,0,1+REPAINT_PADDING*2,height()) |
+        QRegion(oldX-REPAINT_PADDING,0,1+REPAINT_PADDING*2,height())
+    );
 }
